@@ -77,32 +77,22 @@ export default function WorkoutUploadStandalone() {
             const formData = new FormData();
             formData.append('photo', selectedFile);
 
-            // Using Inertia's router to post with FormData
+            // Use Inertia's router to submit the form
             router.post('/api/workouts/upload', formData, {
                 forceFormData: true,
-                onSuccess: (page) => {
-                    // The response should contain extracted workout data
-                    // Navigate to verification page
-                    const response = page.props as unknown as UploadResponse;
-                    if (response.success && response.data) {
-                        // TODO: Navigate to verification page with extracted data
-                        // For now, just log success
-                        console.log('Upload successful:', response.data);
-                    }
-                },
                 onError: (errors) => {
                     setError(
                         errors.photo ||
                             errors.message ||
                             'Failed to upload photo. Please try again.',
                     );
-                    setIsUploading(false);
                 },
                 onFinish: () => {
                     setIsUploading(false);
                 },
             });
-        } catch {
+        } catch (err) {
+            console.error('Upload error:', err);
             setError('An unexpected error occurred. Please try again.');
             setIsUploading(false);
         }
