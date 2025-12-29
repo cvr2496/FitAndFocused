@@ -33,17 +33,19 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN npm ci && npm run build
 
-# Create SQLite database directory
+# Create SQLite database directory and setup .env
 RUN mkdir -p /var/www/html/database && \
     touch /var/www/html/database/database.sqlite && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod 664 /var/www/html/database/database.sqlite
+    chmod 664 /var/www/html/database/database.sqlite && \
+    cp .env.example .env
 
 # Expose port 8000
 EXPOSE 8000
 
 # Start Laravel server
-CMD php artisan migrate --force && \
+CMD if [ -z "$APP_KEY" ]; then php artisan key:generate --force; fi && \
+    php artisan migrate --force && \
     php artisan storage:link && \
     php artisan config:cache && \
     php artisan route:cache && \
