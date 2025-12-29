@@ -8,6 +8,7 @@ use App\Services\AnthropicService;
 use App\Services\ImageProcessingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,7 @@ class WorkoutUploadController extends Controller
     {
         try {
             // Ensure user is authenticated
-            if (!auth()->check()) {
+            if (!Auth::check()) {
                 abort(401, 'Authentication required');
             }
 
@@ -129,7 +130,7 @@ class WorkoutUploadController extends Controller
     {
         try {
             // Ensure user is authenticated
-            if (!auth()->check()) {
+            if (!Auth::check()) {
                 abort(401, 'Authentication required');
             }
 
@@ -152,7 +153,7 @@ class WorkoutUploadController extends Controller
 
             // Create workout record
             $workout = Workout::create([
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'date' => $validated['date'],
                 'title' => $validated['title'] ?? null,
                 'photo_path' => $validated['photo_path'] ?? null,

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Workout;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,11 +16,11 @@ class WorkoutController extends Controller
     public function index(): Response
     {
         // Ensure user is authenticated
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             abort(401, 'Authentication required');
         }
 
-        $workouts = Workout::where('user_id', auth()->id())
+        $workouts = Workout::where('user_id', Auth::id())
             ->with('sets')
             ->orderBy('date', 'desc')
             ->orderBy('created_at', 'desc')
@@ -48,12 +49,12 @@ class WorkoutController extends Controller
     public function show(Workout $workout): Response
     {
         // Ensure user is authenticated
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             abort(401, 'Authentication required');
         }
 
         // Ensure the workout belongs to the authenticated user
-        if ($workout->user_id !== auth()->id()) {
+        if ($workout->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
 
