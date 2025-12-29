@@ -35,6 +35,11 @@ class WorkoutUploadController extends Controller
     public function upload(Request $request): \Inertia\Response|\Illuminate\Http\JsonResponse
     {
         try {
+            // Ensure user is authenticated
+            if (!auth()->check()) {
+                abort(401, 'Authentication required');
+            }
+
             // Validate the upload
             $request->validate([
                 'photo' => 'required|image|mimes:jpeg,jpg,png|max:10240', // Max 10MB
@@ -123,6 +128,11 @@ class WorkoutUploadController extends Controller
     public function save(Request $request)
     {
         try {
+            // Ensure user is authenticated
+            if (!auth()->check()) {
+                abort(401, 'Authentication required');
+            }
+
             // Validate the workout data
             $validated = $request->validate([
                 'date' => 'required|date',
