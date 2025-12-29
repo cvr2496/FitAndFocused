@@ -102,7 +102,7 @@ export default function WorkoutUploadStandalone() {
                     setIsUploading(false);
                 },
             });
-        } catch (err) {
+        } catch {
             setError('An unexpected error occurred. Please try again.');
             setIsUploading(false);
         }

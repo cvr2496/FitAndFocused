@@ -115,7 +115,7 @@ export default function WorkoutUpload() {
                     setIsUploading(false);
                 },
             });
-        } catch (err) {
+        } catch {
             setError('An unexpected error occurred. Please try again.');
             setIsUploading(false);
         }
