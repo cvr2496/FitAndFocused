@@ -10,7 +10,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { type Workout } from '@/types/workout';
-import { Head, router } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { AlertCircle, Check, Image as ImageIcon, Pencil } from 'lucide-react';
 import { useState } from 'react';
 
@@ -20,25 +20,27 @@ interface VerifyWorkoutProps {
 }
 
 export default function VerifyWorkout({ workout, photoUrl }: VerifyWorkoutProps) {
-    const [workoutData, setWorkoutData] = useState<Workout>(workout);
+    const { data, setData, post, processing } = useForm<Workout>(workout);
     const [showPhoto, setShowPhoto] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = () => {
-        setIsSaving(true);
-        
-        // TODO: Implement save to database
-        console.log('Saving workout:', workoutData);
-        
-        // For now, just show success message
-        alert('Workout saved! (Database save not yet implemented)');
-        setIsSaving(false);
+        post('/api/workouts/save', {
+            onError: (errors) => {
+                console.error('Failed to save workout:', errors);
+                alert('Failed to save workout. Please check the console for details.');
+            }
+        });
     };
 
     const updateExerciseName = (exerciseIndex: number, newName: string) => {
-        const updated = { ...workoutData };
-        updated.exercises[exerciseIndex].name = newName;
-        setWorkoutData(updated);
+        setData({
+            ...data,
+            exercises: data.exercises.map((exercise, idx) =>
+                idx === exerciseIndex
+                    ? { ...exercise, name: newName }
+                    : exercise
+            ),
+        });
     };
 
     const updateSet = (
@@ -47,10 +49,23 @@ export default function VerifyWorkout({ workout, photoUrl }: VerifyWorkoutProps)
         field: 'reps' | 'weight',
         value: string
     ) => {
-        const updated = { ...workoutData };
-        const numValue = parseFloat(value) || null;
-        updated.exercises[exerciseIndex].sets[setIndex][field] = numValue;
-        setWorkoutData(updated);
+        const numValue = value === '' ? null : parseFloat(value);
+        
+        setData({
+            ...data,
+            exercises: data.exercises.map((exercise, exIdx) =>
+                exIdx === exerciseIndex
+                    ? {
+                          ...exercise,
+                          sets: exercise.sets.map((set, sIdx) =>
+                              sIdx === setIndex
+                                  ? { ...set, [field]: numValue }
+                                  : set
+                          ),
+                      }
+                    : exercise
+            ),
+        });
     };
 
     return (
@@ -75,9 +90,9 @@ export default function VerifyWorkout({ workout, photoUrl }: VerifyWorkoutProps)
                             <Check className="size-4" />
                             <AlertTitle>Extraction Complete</AlertTitle>
                             <AlertDescription>
-                                Successfully extracted {workoutData.exercises.length} exercises
+                                Successfully extracted {data.exercises.length} exercises
                                 with{' '}
-                                {workoutData.exercises.reduce(
+                                {data.exercises.reduce(
                                     (total, ex) => total + ex.sets.length,
                                     0
                                 )}{' '}
@@ -97,10 +112,10 @@ export default function VerifyWorkout({ workout, photoUrl }: VerifyWorkoutProps)
                                         <Input
                                             id="date"
                                             type="date"
-                                            value={workoutData.date}
+                                            value={data.date}
                                             onChange={(e) =>
-                                                setWorkoutData({
-                                                    ...workoutData,
+                                                setData({
+                                                    ...data,
                                                     date: e.target.value,
                                                 })
                                             }
@@ -111,10 +126,10 @@ export default function VerifyWorkout({ workout, photoUrl }: VerifyWorkoutProps)
                                         <Input
                                             id="title"
                                             type="text"
-                                            value={workoutData.title || ''}
+                                            value={data.title || ''}
                                             onChange={(e) =>
-                                                setWorkoutData({
-                                                    ...workoutData,
+                                                setData({
+                                                    ...data,
                                                     title: e.target.value,
                                                 })
                                             }
@@ -149,7 +164,7 @@ export default function VerifyWorkout({ workout, photoUrl }: VerifyWorkoutProps)
                         </Card>
 
                         {/* Exercises */}
-                        {workoutData.exercises.map((exercise, exerciseIndex) => (
+                        {data.exercises.map((exercise, exerciseIndex) => (
                             <Card key={exerciseIndex}>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
@@ -236,16 +251,16 @@ export default function VerifyWorkout({ workout, photoUrl }: VerifyWorkoutProps)
                             <Button
                                 size="lg"
                                 onClick={handleSave}
-                                disabled={isSaving}
+                                disabled={processing}
                                 className="flex-1"
                             >
-                                {isSaving ? 'Saving...' : 'Save Workout'}
+                                {processing ? 'Saving...' : 'Save Workout'}
                             </Button>
                             <Button
                                 size="lg"
                                 variant="outline"
-                                onClick={() => router.get('/test-upload')}
-                                disabled={isSaving}
+                                onClick={() => window.location.href = '/test-upload'}
+                                disabled={processing}
                             >
                                 Cancel
                             </Button>

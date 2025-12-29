@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Workout;
+use App\Models\Set;
 use App\Services\AnthropicService;
 use App\Services\ImageProcessingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class WorkoutUploadController extends Controller
@@ -108,6 +111,81 @@ class WorkoutUploadController extends Controller
                 'error' => 'Upload processing failed',
                 'message' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Save verified workout data to database
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function save(Request $request)
+    {
+        try {
+            // Validate the workout data
+            $validated = $request->validate([
+                'date' => 'required|date',
+                'title' => 'nullable|string|max:255',
+                'photo_path' => 'nullable|string',
+                'notes' => 'nullable|string',
+                'exercises' => 'required|array',
+                'exercises.*.name' => 'required|string',
+                'exercises.*.sets' => 'required|array',
+                'exercises.*.sets.*.reps' => 'nullable|integer|min:0',
+                'exercises.*.sets.*.weight' => 'nullable|numeric|min:0',
+                'exercises.*.sets.*.unit' => 'nullable|string|in:kg,lbs',
+                'exercises.*.sets.*.notes' => 'nullable|string',
+            ]);
+
+            DB::beginTransaction();
+
+            // Create workout record
+            $workout = Workout::create([
+                'date' => $validated['date'],
+                'title' => $validated['title'] ?? null,
+                'photo_path' => $validated['photo_path'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            // Create sets for each exercise
+            $setNumber = 1;
+            foreach ($validated['exercises'] as $exercise) {
+                foreach ($exercise['sets'] as $set) {
+                    Set::create([
+                        'workout_id' => $workout->id,
+                        'exercise_name' => $exercise['name'],
+                        'set_number' => $setNumber++,
+                        'reps' => $set['reps'] ?? null,
+                        'weight' => $set['weight'] ?? null,
+                        'unit' => $set['unit'] ?? 'kg',
+                        'notes' => $set['notes'] ?? null,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            Log::info('Workout saved successfully', [
+                'workout_id' => $workout->id,
+                'total_sets' => $setNumber - 1
+            ]);
+
+            // Redirect to workout detail page
+            return redirect()->route('workouts.show', $workout->id)->with('success', 'Workout saved successfully!');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return back()->withErrors($e->errors())->withInput();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Workout save failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->with('error', 'Failed to save workout: ' . $e->getMessage())->withInput();
         }
     }
 
