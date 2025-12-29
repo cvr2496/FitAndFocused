@@ -67,7 +67,7 @@ class WorkoutController extends Controller
             ->map(function ($sets, $exerciseName) {
                 return [
                     'name' => $exerciseName,
-                    'sets' => $sets->map(function ($set) {
+                    'sets' => $sets->map(function (\App\Models\Set $set) {
                         return [
                             'id' => $set->id,
                             'set_number' => $set->set_number,

@@ -54,8 +54,10 @@ class Workout extends Model
             ->get()
             ->groupBy('exercise_name')
             ->map(function ($sets) {
+                /** @var Set $firstSet */
+                $firstSet = $sets->first();
                 return [
-                    'name' => $sets->first()->exercise_name,
+                    'name' => $firstSet->exercise_name,
                     'sets' => $sets->values(),
                 ];
             })

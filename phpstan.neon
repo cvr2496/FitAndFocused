@@ -1,0 +1,27 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - config
+        - routes
+        - database/factories
+        - database/seeders
+
+    # Level 5 is a good balance between strictness and practicality
+    level: 5
+    
+    ignoreErrors:
+        # Known Laravel Collection type inference issues with nested map() calls
+        -
+            message: '#Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection.*::map\(\)#'
+            path: app/Http/Controllers/WorkoutController.php
+        -
+            message: '#Anonymous function should return array.*but returns array#'
+            path: app/Http/Controllers/WorkoutController.php
+        
+    excludePaths:
+        - tests/*
+        - database/migrations/*
+

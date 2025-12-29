@@ -5,6 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $workout_id
+ * @property string $exercise_name
+ * @property int $set_number
+ * @property int|null $reps
+ * @property float|null $weight
+ * @property string $unit
+ * @property string|null $notes
+ */
 class Set extends Model
 {
     public $timestamps = false;
