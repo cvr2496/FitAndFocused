@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\WorkoutUploadController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -14,6 +15,15 @@ Route::get('/', function () {
 Route::get('test-upload', function () {
     return Inertia::render('workouts/upload-standalone');
 })->name('test.upload');
+
+// API endpoint for workout photo upload (public for testing)
+Route::post('api/workouts/upload', [WorkoutUploadController::class, 'upload'])
+    ->name('api.workouts.upload');
+
+// Endpoint to retrieve uploaded photos
+Route::get('api/workouts/photos/{path}', [WorkoutUploadController::class, 'getPhoto'])
+    ->where('path', '.*')
+    ->name('api.workouts.photo');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
