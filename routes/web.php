@@ -6,6 +6,17 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'php_version' => PHP_VERSION,
+        'laravel_version' => app()->version(),
+        'app_debug' => config('app.debug'),
+        'app_key_set' => !empty(config('app.key')),
+        'db_connection' => config('database.default'),
+    ]);
+});
+
 Route::get('/', function () {
     return Inertia::render('welcome', [
         'canRegister' => Features::enabled(Features::registration()),
