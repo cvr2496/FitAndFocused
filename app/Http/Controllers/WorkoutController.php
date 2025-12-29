@@ -14,7 +14,8 @@ class WorkoutController extends Controller
      */
     public function index(): Response
     {
-        $workouts = Workout::with('sets')
+        $workouts = Workout::where('user_id', auth()->id())
+            ->with('sets')
             ->orderBy('date', 'desc')
             ->orderBy('created_at', 'desc')
             ->get()
@@ -41,6 +42,11 @@ class WorkoutController extends Controller
      */
     public function show(Workout $workout): Response
     {
+        // Ensure the workout belongs to the authenticated user
+        if ($workout->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $workout->load('sets');
 
         // Group sets by exercise for better display

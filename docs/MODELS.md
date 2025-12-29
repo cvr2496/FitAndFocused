@@ -13,6 +13,49 @@ app/Models/
 └── Set.php          # Individual exercise set
 ```
 
+## User Model
+
+**File:** `app/Models/User.php`
+
+The User model is provided by Laravel and extended with workout relationships.
+
+### Relationships
+
+#### `workouts()` - HasMany Relationship
+
+Returns all workouts belonging to this user.
+
+```php
+public function workouts(): HasMany
+{
+    return $this->hasMany(Workout::class);
+}
+```
+
+**Usage:**
+```php
+$user = User::find(1);
+
+// Get all workouts
+$workouts = $user->workouts;
+
+// Count workouts
+$totalWorkouts = $user->workouts()->count();
+
+// Create workout for user
+$workout = $user->workouts()->create([
+    'date' => '2025-12-29',
+    'title' => 'Chest Day',
+]);
+
+// Get recent workouts
+$recent = $user->workouts()
+    ->where('date', '>=', now()->subDays(30))
+    ->get();
+```
+
+---
+
 ## Workout Model
 
 **File:** `app/Models/Workout.php`
@@ -25,11 +68,13 @@ app/Models/
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Workout extends Model
 {
     protected $fillable = [
+        'user_id',
         'date',
         'title',
         'photo_path',
@@ -46,6 +91,7 @@ class Workout extends Model
 
 Mass-assignable attributes for `Workout::create()` and `$workout->fill()`:
 
+- **`user_id`** (int) - ID of the user who owns this workout
 - **`date`** (string/date) - Workout date in YYYY-MM-DD format
 - **`title`** (string|null) - Optional workout title
 - **`photo_path`** (string|null) - Path to original photo in storage
@@ -56,6 +102,32 @@ Mass-assignable attributes for `Workout::create()` and `$workout->fill()`:
 - **`date`** → Cast to Carbon instance for easy date manipulation
 
 ### Relationships
+
+#### `user()` - BelongsTo Relationship
+
+Returns the user who owns this workout.
+
+```php
+public function user(): BelongsTo
+{
+    return $this->belongsTo(User::class);
+}
+```
+
+**Usage:**
+```php
+$workout = Workout::find(1);
+
+// Get the user
+$user = $workout->user;
+
+// Access user properties
+echo $workout->user->name;
+echo $workout->user->email;
+
+// Eager load to avoid N+1
+$workouts = Workout::with('user')->get();
+```
 
 #### `sets()` - HasMany Relationship
 
@@ -162,6 +234,16 @@ foreach ($exercises as $exercise) {
 
 ```php
 $workout = Workout::create([
+    'user_id' => auth()->id(),
+    'date' => '2025-12-29',
+    'title' => 'Chest and Triceps',
+    'photo_path' => 'uploads/original/workout-123.jpg',
+    'notes' => 'Felt strong today!',
+]);
+
+// Or using the relationship
+$user = User::find(1);
+$workout = $user->workouts()->create([
     'date' => '2025-12-29',
     'title' => 'Chest and Triceps',
     'photo_path' => 'uploads/original/workout-123.jpg',
@@ -193,20 +275,29 @@ $workout->delete();  // Cascade deletes all sets automatically
 #### Querying Workouts
 
 ```php
-// All workouts, newest first
-$workouts = Workout::orderBy('date', 'desc')->get();
+// All workouts for current user, newest first
+$workouts = Workout::where('user_id', auth()->id())
+    ->orderBy('date', 'desc')
+    ->get();
 
 // Workouts with their sets (eager loading)
-$workouts = Workout::with('sets')->get();
+$workouts = Workout::where('user_id', auth()->id())
+    ->with('sets')
+    ->get();
 
 // Workouts from a specific date range
-$workouts = Workout::whereBetween('date', ['2025-01-01', '2025-12-31'])->get();
+$workouts = Workout::where('user_id', auth()->id())
+    ->whereBetween('date', ['2025-01-01', '2025-12-31'])
+    ->get();
 
-// Latest workout
-$latest = Workout::latest('date')->first();
+// Latest workout for current user
+$latest = Workout::where('user_id', auth()->id())
+    ->latest('date')
+    ->first();
 
-// Workout with most sets
-$biggest = Workout::withCount('sets')
+// Workout with most sets for current user
+$biggest = Workout::where('user_id', auth()->id())
+    ->withCount('sets')
     ->orderBy('sets_count', 'desc')
     ->first();
 ```
@@ -372,12 +463,14 @@ Set::where('workout_id', 1)
 ## Model Relationships Summary
 
 ```
-┌─────────────┐              ┌─────────────┐
-│   Workout   │              │     Set     │
-├─────────────┤              ├─────────────┤
-│ sets()      │──────────────│ workout()   │
-│ HasMany     │    1 : N     │ BelongsTo   │
-└─────────────┘              └─────────────┘
+┌─────────────┐              ┌─────────────┐              ┌─────────────┐
+│    User     │              │   Workout   │              │     Set     │
+├─────────────┤              ├─────────────┤              ├─────────────┤
+│ workouts()  │──────────────│ user()      │              │ workout()   │
+│ HasMany     │    1 : N     │ BelongsTo   │──────────────│ BelongsTo   │
+│             │              │ sets()      │    1 : N     │             │
+│             │              │ HasMany     │              │             │
+└─────────────┘              └─────────────┘              └─────────────┘
 ```
 
 ### Accessing Relationships

@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Workout extends Model
 {
     protected $fillable = [
+        'user_id',
         'date',
         'title',
         'photo_path',
@@ -17,6 +19,14 @@ class Workout extends Model
     protected $casts = [
         'date' => 'date',
     ];
+
+    /**
+     * A workout belongs to a user
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * A workout has many sets

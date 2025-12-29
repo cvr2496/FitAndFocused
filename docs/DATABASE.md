@@ -9,21 +9,25 @@ The FitAndFocused workout logger uses SQLite as its database engine. The databas
 ### Entity Relationship Diagram
 
 ```
-┌─────────────────┐         ┌─────────────────┐
-│    workouts     │         │      sets       │
-├─────────────────┤         ├─────────────────┤
-│ id (PK)         │────┐    │ id (PK)         │
-│ date            │    │    │ workout_id (FK) │
-│ title           │    └───<│ exercise_name   │
-│ photo_path      │         │ set_number      │
-│ notes           │         │ reps            │
-│ created_at      │         │ weight          │
-│ updated_at      │         │ unit            │
-└─────────────────┘         │ notes           │
-                            └─────────────────┘
+┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
+│     users       │         │    workouts     │         │      sets       │
+├─────────────────┤         ├─────────────────┤         ├─────────────────┤
+│ id (PK)         │────┐    │ id (PK)         │────┐    │ id (PK)         │
+│ name            │    │    │ user_id (FK)    │    │    │ workout_id (FK) │
+│ email           │    └───<│ date            │    └───<│ exercise_name   │
+│ password        │         │ title           │         │ set_number      │
+│ ...             │         │ photo_path      │         │ reps            │
+└─────────────────┘         │ notes           │         │ weight          │
+                            │ created_at      │         │ unit            │
+                            │ updated_at      │         │ notes           │
+                            └─────────────────┘         └─────────────────┘
 
-Relationship: One workout has many sets (1:N)
-Cascade Delete: Deleting a workout deletes all its sets
+Relationships:
+- One user has many workouts (1:N)
+- One workout has many sets (1:N)
+Cascade Delete:
+- Deleting a user deletes all their workouts and sets
+- Deleting a workout deletes all its sets
 ```
 
 ## Tables
@@ -35,6 +39,7 @@ The main table storing workout metadata and date information.
 | Column      | Type      | Nullable | Default | Description                                    |
 |-------------|-----------|----------|---------|------------------------------------------------|
 | id          | INTEGER   | NO       | AUTO    | Primary key                                    |
+| user_id     | INTEGER   | NO       | -       | Foreign key to users.id (CASCADE DELETE)       |
 | date        | DATE      | NO       | -       | Date the workout was performed (YYYY-MM-DD)    |
 | title       | VARCHAR   | YES      | NULL    | Workout title (e.g., "Chest and Triceps")      |
 | photo_path  | VARCHAR   | YES      | NULL    | Path to original workout photo in storage      |
@@ -44,12 +49,13 @@ The main table storing workout metadata and date information.
 
 **Indexes:**
 - Primary key on `id`
-- No additional indexes (small dataset expected)
+- Index on `user_id` (for filtering by user)
+- Foreign key: `user_id` references `users(id)` ON DELETE CASCADE
 
 **Sample Data:**
 ```sql
-INSERT INTO workouts (date, title, photo_path, notes) VALUES
-  ('2025-12-28', 'Chest and Triceps', 'uploads/original/2025-12-28-abc123.jpg', 'Good workout! Felt strong today');
+INSERT INTO workouts (user_id, date, title, photo_path, notes) VALUES
+  (1, '2025-12-28', 'Chest and Triceps', 'uploads/original/2025-12-28-abc123.jpg', 'Good workout! Felt strong today');
 ```
 
 ---
@@ -87,6 +93,29 @@ INSERT INTO sets (workout_id, exercise_name, set_number, reps, weight, unit, not
 ```
 
 ## Relationships
+
+### One-to-Many: User → Workouts
+
+A user can have many workouts, but each workout belongs to exactly one user.
+
+**Database Level:**
+- Foreign key constraint: `workouts.user_id → users.id`
+- ON DELETE CASCADE: When a user is deleted, all their workouts (and their sets) are automatically deleted
+
+**Application Level (Laravel Eloquent):**
+```php
+// In User model
+public function workouts(): HasMany
+{
+    return $this->hasMany(Workout::class);
+}
+
+// In Workout model
+public function user(): BelongsTo
+{
+    return $this->belongsTo(User::class);
+}
+```
 
 ### One-to-Many: Workout → Sets
 
@@ -177,9 +206,10 @@ $table->foreignId('workout_id')
 
 ## Querying Examples
 
-### Get all workouts with exercise count
+### Get all workouts for a user with exercise count
 ```php
-$workouts = Workout::with('sets')
+$workouts = Workout::where('user_id', auth()->id())
+    ->with('sets')
     ->orderBy('date', 'desc')
     ->get()
     ->map(function ($workout) {

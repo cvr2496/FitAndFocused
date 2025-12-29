@@ -14,13 +14,13 @@ For production, replace with your actual domain.
 
 ## Authentication
 
-Most workout endpoints require authentication using Laravel Fortify:
+All workout endpoints require authentication using Laravel Fortify:
 
 - Login: `POST /login`
 - Logout: `POST /logout`
 - Register: `POST /register`
 
-The `/api/workouts/upload` endpoint is currently public for testing but should be protected in production.
+**Important:** All workouts are scoped to the authenticated user. Users can only view and manage their own workouts.
 
 ---
 

@@ -142,6 +142,7 @@ class WorkoutUploadController extends Controller
 
             // Create workout record
             $workout = Workout::create([
+                'user_id' => auth()->id(),
                 'date' => $validated['date'],
                 'title' => $validated['title'] ?? null,
                 'photo_path' => $validated['photo_path'] ?? null,
