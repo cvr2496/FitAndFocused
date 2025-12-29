@@ -14,6 +14,11 @@ class WorkoutController extends Controller
      */
     public function index(): Response
     {
+        // Ensure user is authenticated
+        if (!auth()->check()) {
+            abort(401, 'Authentication required');
+        }
+
         $workouts = Workout::where('user_id', auth()->id())
             ->with('sets')
             ->orderBy('date', 'desc')
@@ -42,6 +47,11 @@ class WorkoutController extends Controller
      */
     public function show(Workout $workout): Response
     {
+        // Ensure user is authenticated
+        if (!auth()->check()) {
+            abort(401, 'Authentication required');
+        }
+
         // Ensure the workout belongs to the authenticated user
         if ($workout->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
