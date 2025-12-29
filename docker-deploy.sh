@@ -21,3 +21,4 @@ echo "  docker compose restart         # Restart app"
 echo "  docker compose down            # Stop app"
 echo "  docker compose exec app bash   # Enter container"
 
+
