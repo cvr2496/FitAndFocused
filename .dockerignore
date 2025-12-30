@@ -15,5 +15,5 @@ bootstrap/cache/*
 *.md
 tests
 .phpunit.cache
-
+public/hot
 
