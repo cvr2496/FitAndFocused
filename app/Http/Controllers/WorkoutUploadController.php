@@ -84,11 +84,13 @@ class WorkoutUploadController extends Controller
                 'exercises' => count($workoutData['exercises'] ?? [])
             ]);
 
-            // Return Inertia response to verification page
-            return \Inertia\Inertia::render('workouts/verify', [
-                'workout' => $workoutData,
-                'photoUrl' => asset('storage/' . $originalPath),
+            // Store workout data in session and redirect to verify page (Post/Redirect/Get pattern)
+            session([
+                'workout_data' => $workoutData,
+                'workout_photo_url' => asset('storage/' . $originalPath),
             ]);
+
+            return redirect()->route('workouts.verify');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Inertia handles validation exceptions automatically
@@ -110,6 +112,29 @@ class WorkoutUploadController extends Controller
 
             return back()->with('error', 'Failed to process upload: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Show the workout verification page
+     *
+     * @return \Inertia\Response|\Illuminate\Http\RedirectResponse
+     */
+    public function showVerify()
+    {
+        // Check if we have workout data in session
+        if (!session()->has('workout_data')) {
+            return redirect()->route('workouts.upload')
+                ->with('error', 'No workout data found. Please upload a photo first.');
+        }
+
+        $workoutData = session('workout_data');
+        $photoUrl = session('workout_photo_url');
+
+        // Keep the data in session in case they refresh
+        return \Inertia\Inertia::render('workouts/verify', [
+            'workout' => $workoutData,
+            'photoUrl' => $photoUrl,
+        ]);
     }
 
     /**
@@ -169,6 +194,9 @@ class WorkoutUploadController extends Controller
             }
 
             DB::commit();
+
+            // Clear session data
+            session()->forget(['workout_data', 'workout_photo_url']);
 
             Log::info('Workout saved successfully', [
                 'workout_id' => $workout->id,
