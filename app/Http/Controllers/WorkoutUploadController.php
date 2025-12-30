@@ -91,12 +91,8 @@ class WorkoutUploadController extends Controller
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Validation failed',
-                'message' => $e->getMessage(),
-                'errors' => $e->errors()
-            ], 422);
+            // Inertia handles validation exceptions automatically
+            return back()->withErrors($e->errors())->withInput();
 
         } catch (\Exception $e) {
             Log::error('Workout upload failed', [
@@ -112,11 +108,7 @@ class WorkoutUploadController extends Controller
                 Storage::delete($processedPath);
             }
 
-            return response()->json([
-                'success' => false,
-                'error' => 'Upload processing failed',
-                'message' => $e->getMessage()
-            ], 500);
+            return back()->with('error', 'Failed to process upload: ' . $e->getMessage());
         }
     }
 
