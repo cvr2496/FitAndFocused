@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Workout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
 
 class WorkoutController extends Controller
 {
@@ -94,5 +96,31 @@ class WorkoutController extends Controller
             ],
             'exercises' => $exercises,
         ]);
+    }
+
+    /**
+     * Delete a workout
+     */
+    public function destroy(Workout $workout): RedirectResponse
+    {
+        // Ensure user is authenticated
+        if (!Auth::check()) {
+            abort(401, 'Authentication required');
+        }
+
+        // Ensure the workout belongs to the authenticated user
+        if ($workout->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Delete the photo if it exists
+        if ($workout->photo_path) {
+            Storage::disk('public')->delete($workout->photo_path);
+        }
+
+        // Delete the workout (sets will be cascade deleted)
+        $workout->delete();
+
+        return redirect()->route('workouts.index')->with('success', 'Workout deleted successfully.');
     }
 }

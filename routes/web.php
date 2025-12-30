@@ -24,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('workouts.upload');
     Route::get('workouts/verify', [WorkoutUploadController::class, 'showVerify'])->name('workouts.verify');
     Route::get('workouts/{workout}', [WorkoutController::class, 'show'])->name('workouts.show');
+    Route::delete('workouts/{workout}', [WorkoutController::class, 'destroy'])->name('workouts.destroy');
     
     // API endpoints for workout operations
     Route::post('api/workouts/upload', [WorkoutUploadController::class, 'upload'])
