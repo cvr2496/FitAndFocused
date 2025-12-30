@@ -33,7 +33,7 @@ class WorkoutUploadController extends Controller
      * @param Request $request
      * @return \Inertia\Response|\Illuminate\Http\JsonResponse
      */
-    public function upload(Request $request): \Inertia\Response|\Illuminate\Http\JsonResponse
+    public function upload(Request $request): \Inertia\Response|\Illuminate\Http\RedirectResponse
     {
         try {
             // Ensure user is authenticated
