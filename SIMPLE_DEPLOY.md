@@ -109,6 +109,59 @@ php artisan view:clear
 php artisan cache:clear
 ```
 
+## Development vs Production Workflow
+
+### ⚠️ IMPORTANT: Hot Reload vs Public Domain
+
+**You CANNOT use `npm run dev` with the public domain!**
+
+When accessing via the public domain (e.g., `https://fitandfocused.exe.xyz`), you MUST use built assets:
+
+```bash
+# Build the frontend assets
+npm run build
+
+# Then run only Laravel
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+**Why?** The Vite dev server runs on `127.0.0.1:5173` (local only), which causes CORS errors when accessed through the public domain. The browser cannot reach your local Vite server from the public URL.
+
+### Local Development with Hot Reload
+
+If you want hot reload, access `http://localhost:8000` directly on the VM:
+
+```bash
+# Terminal 1: Vite dev server
+npm run dev
+
+# Terminal 2: Laravel server
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+Then open `http://localhost:8000` in your browser (not the public domain).
+
+### Production Workflow (Public Domain)
+
+When deploying or testing via public domain:
+
+```bash
+# Stop Vite dev server if running
+pkill -f "npm run dev"
+
+# Build frontend assets
+npm run build
+
+# Restart Laravel
+pkill -f "php artisan serve"
+php artisan serve --host=0.0.0.0 --port=8000
+
+# Or in background:
+nohup php artisan serve --host=0.0.0.0 --port=8000 > server.log 2>&1 &
+```
+
+**Remember:** After frontend changes, always run `npm run build` before accessing the public domain!
+
 ## Advantages of This Approach
 
 ✅ **Simple**: No Docker complexity  
@@ -121,7 +174,7 @@ php artisan cache:clear
 
 - This runs Laravel in development mode (`php artisan serve`)
 - For 5 VMs, setup takes ~2 minutes each
-- Changes are instant - just `git pull` and restart
+- Changes require `npm run build` + restart for public domain
 - Logs are easily accessible
-- No caching issues to debug
+- Use `localhost:8000` for hot reload, public domain for built assets
 
