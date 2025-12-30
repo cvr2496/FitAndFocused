@@ -26,7 +26,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application files
+# Copy application files  
+# Cache bust: 2025-12-30-v2
 COPY . .
 
 # Install dependencies
