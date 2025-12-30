@@ -13,13 +13,13 @@ ssh exe.dev share set-public fitandfocused
 ### 2. SSH into the VM and run setup
 ```bash
 ssh fitandfocused.exe.xyz
-export ANTHROPIC_API_KEY="your-api-key-here"
-curl -fsSL https://raw.githubusercontent.com/cvr2496/FitAndFocused/main/setup-vm.sh | bash
 ```
 
-Or in one line:
+Then copy/paste these commands (replace with your actual API key):
+
 ```bash
-ssh fitandfocused.exe.xyz 'export ANTHROPIC_API_KEY="your-api-key-here" && curl -fsSL https://raw.githubusercontent.com/cvr2496/FitAndFocused/main/setup-vm.sh | bash'
+export ANTHROPIC_API_KEY="your-anthropic-api-key"
+curl -fsSL https://raw.githubusercontent.com/cvr2496/FitAndFocused/main/setup-vm.sh | bash
 ```
 
 ### 3. Start the server
