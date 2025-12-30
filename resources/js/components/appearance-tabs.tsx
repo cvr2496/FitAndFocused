@@ -1,35 +1,41 @@
-import { useAppearance } from '@/hooks/use-appearance';
+import { Appearance, useAppearance } from '@/hooks/use-appearance';
 import { cn } from '@/lib/utils';
-import { Moon } from 'lucide-react';
+import { LucideIcon, Monitor, Moon, Sun } from 'lucide-react';
 import { HTMLAttributes } from 'react';
 
 export default function AppearanceToggleTab({
     className = '',
     ...props
 }: HTMLAttributes<HTMLDivElement>) {
-    const { appearance } = useAppearance();
+    const { appearance, updateAppearance } = useAppearance();
+
+    const tabs: { value: Appearance; icon: LucideIcon; label: string }[] = [
+        { value: 'dark', icon: Moon, label: 'Dark' },
+    ];
 
     return (
         <div
             className={cn(
-                'inline-flex gap-1 rounded-lg bg-card p-1 border border-border',
+                'inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800',
                 className,
             )}
             {...props}
         >
-            <button
-                disabled
-                className={cn(
-                    'flex items-center rounded-md px-3.5 py-1.5 transition-colors cursor-not-allowed',
-                    'bg-primary text-primary-foreground shadow-xs',
-                )}
-            >
-                <Moon className="-ml-1 h-4 w-4" />
-                <span className="ml-1.5 text-sm font-medium">Dark Mode</span>
-            </button>
-            <div className="flex items-center px-3 text-xs text-muted-foreground">
-                Gym logbook aesthetic • Always on
-            </div>
+            {tabs.map(({ value, icon: Icon, label }) => (
+                <button
+                    key={value}
+                    onClick={() => updateAppearance(value)}
+                    className={cn(
+                        'flex items-center rounded-md px-3.5 py-1.5 transition-colors',
+                        appearance === value
+                            ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
+                            : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
+                    )}
+                >
+                    <Icon className="-ml-1 h-4 w-4" />
+                    <span className="ml-1.5 text-sm">{label}</span>
+                </button>
+            ))}
         </div>
     );
 }
