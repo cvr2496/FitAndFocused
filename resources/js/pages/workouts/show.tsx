@@ -8,6 +8,14 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
     Table,
     TableBody,
     TableCell,
@@ -17,8 +25,8 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import workouts from '@/routes/workouts';
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Dumbbell, Image as ImageIcon, StickyNote } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { ArrowLeft, Calendar, Dumbbell, Image as ImageIcon, StickyNote, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface SetData {
@@ -52,6 +60,8 @@ interface WorkoutShowProps {
 
 export default function WorkoutShow({ workout, exercises }: WorkoutShowProps) {
     const [showPhoto, setShowPhoto] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -64,6 +74,19 @@ export default function WorkoutShow({ workout, exercises }: WorkoutShowProps) {
     };
 
     const totalSets = exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+
+    const handleDelete = () => {
+        setIsDeleting(true);
+        router.delete(`/workouts/${workout.id}`, {
+            onSuccess: () => {
+                // Redirect happens automatically via Laravel
+            },
+            onError: () => {
+                setIsDeleting(false);
+                setShowDeleteDialog(false);
+            },
+        });
+    };
 
     return (
         <AppLayout>
@@ -106,6 +129,13 @@ export default function WorkoutShow({ workout, exercises }: WorkoutShowProps) {
                                     </span>
                                 </div>
                             </div>
+                            <Button
+                                variant="destructive"
+                                onClick={() => setShowDeleteDialog(true)}
+                            >
+                                <Trash2 className="mr-2 size-4" />
+                                Delete
+                            </Button>
                         </div>
                     </div>
 
@@ -198,6 +228,34 @@ export default function WorkoutShow({ workout, exercises }: WorkoutShowProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete Workout</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete this workout? This action cannot be undone and will also delete all associated sets and exercises.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowDeleteDialog(false)}
+                            disabled={isDeleting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? 'Deleting...' : 'Delete Workout'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }
