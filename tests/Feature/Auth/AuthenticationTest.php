@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
 
 test('login screen can be rendered', function () {
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $response = $this->get(route('login'));
 
     $response->assertStatus(200);
@@ -13,6 +14,7 @@ test('login screen can be rendered', function () {
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->withoutTwoFactor()->create();
 
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $response = $this->post(route('login.store'), [
         'email' => $user->email,
         'password' => 'password',
@@ -23,6 +25,7 @@ test('users can authenticate using the login screen', function () {
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     if (! Features::canManageTwoFactorAuthentication()) {
         $this->markTestSkipped('Two-factor authentication is not enabled.');
     }
@@ -52,7 +55,7 @@ test('users with two factor enabled are redirected to two factor challenge', fun
 
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
-
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $this->post(route('login.store'), [
         'email' => $user->email,
         'password' => 'wrong-password',
@@ -64,6 +67,7 @@ test('users can not authenticate with invalid password', function () {
 test('users can logout', function () {
     $user = User::factory()->create();
 
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $response = $this->actingAs($user)->post(route('logout'));
 
     $this->assertGuest();
@@ -75,6 +79,7 @@ test('users are rate limited', function () {
 
     RateLimiter::increment(md5('login'.implode('|', [$user->email, '127.0.0.1'])), amount: 5);
 
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $response = $this->post(route('login.store'), [
         'email' => $user->email,
         'password' => 'wrong-password',

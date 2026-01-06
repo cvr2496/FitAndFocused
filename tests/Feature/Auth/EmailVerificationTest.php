@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\URL;
 test('email verification screen can be rendered', function () {
     $user = User::factory()->unverified()->create();
 
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $response = $this->actingAs($user)->get(route('verification.notice'));
 
     $response->assertStatus(200);
@@ -24,6 +25,7 @@ test('email can be verified', function () {
         ['id' => $user->id, 'hash' => sha1($user->email)]
     );
 
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $response = $this->actingAs($user)->get($verificationUrl);
 
     Event::assertDispatched(Verified::class);
@@ -40,6 +42,7 @@ test('email is not verified with invalid hash', function () {
         ['id' => $user->id, 'hash' => sha1('wrong-email')]
     );
 
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $this->actingAs($user)->get($verificationUrl);
 
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
@@ -56,6 +59,7 @@ test('email is not verified with invalid user id', function () {
         ['id' => 123, 'hash' => sha1($user->email)]
     );
 
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $this->actingAs($user)->get($verificationUrl);
 
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
@@ -66,6 +70,7 @@ test('verified user is redirected to dashboard from verification prompt', functi
         'email_verified_at' => now(),
     ]);
 
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $response = $this->actingAs($user)->get(route('verification.notice'));
 
     $response->assertRedirect(route('dashboard', absolute: false));
@@ -84,6 +89,7 @@ test('already verified user visiting verification link is redirected without fir
         ['id' => $user->id, 'hash' => sha1($user->email)]
     );
 
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $this->actingAs($user)->get($verificationUrl)
         ->assertRedirect(route('dashboard', absolute: false).'?verified=1');
 

@@ -11,6 +11,7 @@ test('sends verification notification', function () {
         'email_verified_at' => null,
     ]);
 
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $this->actingAs($user)
         ->post(route('verification.send'))
         ->assertRedirect(route('home'));
@@ -25,6 +26,7 @@ test('does not send verification notification if email is verified', function ()
         'email_verified_at' => now(),
     ]);
 
+    /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $this->actingAs($user)
         ->post(route('verification.send'))
         ->assertRedirect(route('dashboard', absolute: false));
