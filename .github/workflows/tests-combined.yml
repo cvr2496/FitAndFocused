@@ -1,4 +1,4 @@
-name: Tests
+name: Tests (Combined)
 
 on:
   push:
@@ -7,52 +7,8 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  backend-tests:
-    name: Backend Tests (PHP/Pest)
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, xml, ctype, json, bcmath, gd, pdo, sqlite
-          coverage: none
-
-      - name: Get Composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
-
-      - name: Create SQLite database
-        run: touch database/database.sqlite
-
-      - name: Run database migrations
-        run: php artisan migrate --force
-
-      - name: Seed demo data
-        run: php artisan demo:seed
-
-      - name: Create storage link
-        run: php artisan storage:link
-
-      - name: Run backend tests
-        run: php artisan test
-
-  e2e-tests:
-    name: E2E Tests (Playwright)
+  tests:
+    name: All Tests
     runs-on: ubuntu-latest
     
     steps:
@@ -71,6 +27,17 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
@@ -93,6 +60,9 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
+      - name: Run backend tests
+        run: php artisan test
+
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
@@ -114,3 +84,4 @@ jobs:
           name: playwright-screenshots
           path: test-results/
           retention-days: 7
+
