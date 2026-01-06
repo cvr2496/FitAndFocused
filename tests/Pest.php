@@ -15,6 +15,9 @@ pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
 
+pest()->extend(Tests\TestCase::class)
+    ->in('Unit');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations
@@ -41,7 +44,27 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+use App\Models\User;
+use Illuminate\Support\Facades\Artisan;
+
+/**
+ * Act as the demo user in tests
+ */
+function actingAsDemo(): User
 {
-    // ..
+    $user = User::where('email', 'demo@fitandfocused.com')->first();
+    if (!$user) {
+        Artisan::call('demo:seed');
+        $user = User::where('email', 'demo@fitandfocused.com')->first();
+    }
+    test()->actingAs($user);
+    return $user;
+}
+
+/**
+ * Seed demo data (with fresh option)
+ */
+function seedDemo(): void
+{
+    Artisan::call('demo:seed', ['--fresh' => true]);
 }
