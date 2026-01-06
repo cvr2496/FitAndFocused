@@ -229,13 +229,20 @@ class WorkoutUploadController extends Controller
      */
     public function getPhoto(string $path)
     {
-        $fullPath = 'uploads/original/' . $path;
+        // Try multiple possible locations
+        $possiblePaths = [
+            'uploads/original/' . $path,
+            'uploads/demo/' . $path,
+            $path, // Full path might be provided
+        ];
         
-        if (!Storage::exists($fullPath)) {
-            abort(404, 'Photo not found');
+        foreach ($possiblePaths as $fullPath) {
+            if (Storage::disk('public')->exists($fullPath)) {
+                return response()->file(Storage::disk('public')->path($fullPath));
+            }
         }
-
-        return response()->file(Storage::path($fullPath));
+        
+        abort(404, 'Photo not found');
     }
 }
 
