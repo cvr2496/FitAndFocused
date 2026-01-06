@@ -2,20 +2,22 @@
 
 use App\Http\Controllers\WorkoutUploadController;
 use App\Http\Controllers\WorkoutController;
+use App\Http\Controllers\HomeController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Laravel\Fortify\Features;
 
+// Root - redirect based on auth status
 Route::get('/', function () {
-    return Inertia::render('welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
-})->name('home');
+    return redirect()->route(Auth::check() ? 'home' : 'login');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    // Home screen (main dashboard)
+    Route::get('home', [HomeController::class, 'index'])->name('home');
+    
+    // Redirect old dashboard to home
+    Route::redirect('dashboard', '/home')->name('dashboard');
 
     // Workout upload and management routes
     Route::get('workouts', [WorkoutController::class, 'index'])->name('workouts.index');
