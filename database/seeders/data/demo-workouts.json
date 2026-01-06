@@ -1,0 +1,519 @@
+{
+  "user": {
+    "name": "Demo User",
+    "email": "demo@fitandfocused.com",
+    "password": "demo123"
+  },
+  "workouts": [
+    {
+      "date": "2025-01-06",
+      "title": "Chest and Triceps",
+      "photo_filename": "demo-workout-01.jpg",
+      "notes": null,
+      "exercises": [
+        {
+          "name": "Bench Press",
+          "sets": [
+            {"reps": 10, "weight": 60, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 70, "unit": "kg", "notes": null},
+            {"reps": 6, "weight": 80, "unit": "kg", "notes": "felt heavy"},
+            {"reps": 8, "weight": 70, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Incline DB Press",
+          "sets": [
+            {"reps": 12, "weight": 25, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 30, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 30, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Cable Tricep Pulldown",
+          "sets": [
+            {"reps": 12, "weight": 17, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 17, "unit": "kg", "notes": null},
+            {"reps": 12, "weight": 17, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Overhead Tricep Extension",
+          "sets": [
+            {"reps": 10, "weight": 12, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 12, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2025-01-05",
+      "title": "Back and Biceps",
+      "photo_filename": "demo-workout-02.jpeg",
+      "notes": "Great pump today",
+      "exercises": [
+        {
+          "name": "Deadlifts",
+          "sets": [
+            {"reps": 5, "weight": 225, "unit": "lbs", "notes": "PR!"},
+            {"reps": 5, "weight": 235, "unit": "lbs", "notes": "new PR!"},
+            {"reps": 3, "weight": 245, "unit": "lbs", "notes": "tough but good"}
+          ]
+        },
+        {
+          "name": "Pull-ups",
+          "sets": [
+            {"reps": 10, "weight": 0, "unit": "kg", "notes": "bodyweight"},
+            {"reps": 8, "weight": 0, "unit": "kg", "notes": null},
+            {"reps": 6, "weight": 0, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Barbell Rows",
+          "sets": [
+            {"reps": 10, "weight": 60, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 70, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 70, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Hammer Curls",
+          "sets": [
+            {"reps": 12, "weight": 15, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 17.5, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 17.5, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2025-01-04",
+      "title": "Leg Day",
+      "photo_filename": "demo-workout-03.jpg",
+      "notes": null,
+      "exercises": [
+        {
+          "name": "Squats",
+          "sets": [
+            {"reps": 10, "weight": 100, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 120, "unit": "kg", "notes": null},
+            {"reps": 6, "weight": 140, "unit": "kg", "notes": "depth was good"},
+            {"reps": 8, "weight": 120, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Leg Press",
+          "sets": [
+            {"reps": 12, "weight": 200, "unit": "kg", "notes": null},
+            {"reps": 12, "weight": 220, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 240, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Romanian Deadlifts",
+          "sets": [
+            {"reps": 10, "weight": 80, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 90, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 90, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Calf Raises",
+          "sets": [
+            {"reps": 15, "weight": 50, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 50, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 50, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 50, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2025-01-02",
+      "title": "Shoulders and Arms",
+      "photo_filename": "demo-workout-04.jpeg",
+      "notes": "Shoulder felt great, no pain",
+      "exercises": [
+        {
+          "name": "Overhead Press",
+          "sets": [
+            {"reps": 10, "weight": 45, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 50, "unit": "kg", "notes": null},
+            {"reps": 6, "weight": 55, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Lateral Raises",
+          "sets": [
+            {"reps": 12, "weight": 10, "unit": "kg", "notes": null},
+            {"reps": 12, "weight": 10, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 12, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Face Pulls",
+          "sets": [
+            {"reps": 15, "weight": 15, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 15, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Barbell Curls",
+          "sets": [
+            {"reps": 10, "weight": 30, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 35, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 35, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2024-12-31",
+      "title": "Chest Focus",
+      "photo_filename": "demo-workout-05.jpg",
+      "notes": "Last workout of the year!",
+      "exercises": [
+        {
+          "name": "Bench Press",
+          "sets": [
+            {"reps": 8, "weight": 135, "unit": "lbs", "notes": null},
+            {"reps": 6, "weight": 155, "unit": "lbs", "notes": null},
+            {"reps": 5, "weight": 165, "unit": "lbs", "notes": null},
+            {"reps": 8, "weight": 145, "unit": "lbs", "notes": null}
+          ]
+        },
+        {
+          "name": "DB Chest Flies",
+          "sets": [
+            {"reps": 12, "weight": 12, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 12, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 12, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Push-ups",
+          "sets": [
+            {"reps": 20, "weight": 0, "unit": "kg", "notes": "bodyweight"},
+            {"reps": 15, "weight": 0, "unit": "kg", "notes": null},
+            {"reps": 12, "weight": 0, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2024-12-29",
+      "title": "Back Day",
+      "photo_filename": "demo-workout-06.jpeg",
+      "notes": null,
+      "exercises": [
+        {
+          "name": "Lat Pulldowns",
+          "sets": [
+            {"reps": 12, "weight": 50, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 60, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 65, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Seated Cable Rows",
+          "sets": [
+            {"reps": 10, "weight": 55, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 60, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 60, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Face Pulls",
+          "sets": [
+            {"reps": 15, "weight": 12, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 12, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 12, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2024-12-27",
+      "title": "Lower Body Power",
+      "photo_filename": "demo-workout-07.jpg",
+      "notes": "Felt strong today",
+      "exercises": [
+        {
+          "name": "Front Squats",
+          "sets": [
+            {"reps": 8, "weight": 80, "unit": "kg", "notes": null},
+            {"reps": 6, "weight": 90, "unit": "kg", "notes": null},
+            {"reps": 6, "weight": 90, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Bulgarian Split Squats",
+          "sets": [
+            {"reps": 10, "weight": 20, "unit": "kg", "notes": "each leg"},
+            {"reps": 10, "weight": 20, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 25, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Leg Curls",
+          "sets": [
+            {"reps": 12, "weight": 40, "unit": "kg", "notes": null},
+            {"reps": 12, "weight": 45, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 50, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2024-12-25",
+      "title": "Christmas Pump",
+      "photo_filename": "demo-workout-08.jpeg",
+      "notes": "Quick workout before family dinner",
+      "exercises": [
+        {
+          "name": "Bench Press",
+          "sets": [
+            {"reps": 10, "weight": 60, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 65, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Cable Flies",
+          "sets": [
+            {"reps": 15, "weight": 8, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 8, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Tricep Dips",
+          "sets": [
+            {"reps": 12, "weight": 0, "unit": "kg", "notes": "bodyweight"},
+            {"reps": 10, "weight": 0, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2024-12-23",
+      "title": "Back and Rear Delts",
+      "photo_filename": "demo-workout-09.jpg",
+      "notes": null,
+      "exercises": [
+        {
+          "name": "Deadlifts",
+          "sets": [
+            {"reps": 5, "weight": 100, "unit": "kg", "notes": null},
+            {"reps": 5, "weight": 120, "unit": "kg", "notes": null},
+            {"reps": 3, "weight": 140, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "T-Bar Rows",
+          "sets": [
+            {"reps": 10, "weight": 40, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 50, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 50, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Reverse Flies",
+          "sets": [
+            {"reps": 15, "weight": 8, "unit": "kg", "notes": null},
+            {"reps": 12, "weight": 10, "unit": "kg", "notes": null},
+            {"reps": 12, "weight": 10, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2024-12-21",
+      "title": "Leg Hypertrophy",
+      "photo_filename": "demo-workout-10.jpeg",
+      "notes": "Focus on time under tension",
+      "exercises": [
+        {
+          "name": "Squats",
+          "sets": [
+            {"reps": 12, "weight": 80, "unit": "kg", "notes": null},
+            {"reps": 12, "weight": 90, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 100, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 100, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Walking Lunges",
+          "sets": [
+            {"reps": 20, "weight": 15, "unit": "kg", "notes": "each leg"},
+            {"reps": 20, "weight": 15, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Leg Extensions",
+          "sets": [
+            {"reps": 15, "weight": 50, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 55, "unit": "kg", "notes": null},
+            {"reps": 12, "weight": 60, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2024-12-19",
+      "title": "Upper Body Accessories",
+      "photo_filename": "demo-workout-11.jpg",
+      "notes": "Light day, recovery focused",
+      "exercises": [
+        {
+          "name": "Cable Crossovers",
+          "sets": [
+            {"reps": 15, "weight": 10, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 10, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 10, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Lateral Raises",
+          "sets": [
+            {"reps": 20, "weight": 7.5, "unit": "kg", "notes": null},
+            {"reps": 20, "weight": 7.5, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Preacher Curls",
+          "sets": [
+            {"reps": 12, "weight": 12.5, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 15, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2024-12-17",
+      "title": "Full Body Strength",
+      "photo_filename": "demo-workout-12.jpeg",
+      "notes": "Hit all major muscle groups",
+      "exercises": [
+        {
+          "name": "Bench Press",
+          "sets": [
+            {"reps": 5, "weight": 80, "unit": "kg", "notes": null},
+            {"reps": 5, "weight": 85, "unit": "kg", "notes": null},
+            {"reps": 3, "weight": 90, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Squats",
+          "sets": [
+            {"reps": 5, "weight": 100, "unit": "kg", "notes": null},
+            {"reps": 5, "weight": 110, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Barbell Rows",
+          "sets": [
+            {"reps": 8, "weight": 65, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 70, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Overhead Press",
+          "sets": [
+            {"reps": 8, "weight": 40, "unit": "kg", "notes": null},
+            {"reps": 6, "weight": 45, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2024-12-15",
+      "title": "Arms and Abs",
+      "photo_filename": "demo-workout-13.jpg",
+      "notes": null,
+      "exercises": [
+        {
+          "name": "Barbell Curls",
+          "sets": [
+            {"reps": 12, "weight": 25, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 30, "unit": "kg", "notes": null},
+            {"reps": 8, "weight": 32.5, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Skull Crushers",
+          "sets": [
+            {"reps": 12, "weight": 20, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 25, "unit": "kg", "notes": null},
+            {"reps": 10, "weight": 25, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Cable Curls",
+          "sets": [
+            {"reps": 15, "weight": 15, "unit": "kg", "notes": null},
+            {"reps": 12, "weight": 17.5, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Rope Pushdowns",
+          "sets": [
+            {"reps": 15, "weight": 20, "unit": "kg", "notes": null},
+            {"reps": 15, "weight": 22.5, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2024-12-13",
+      "title": "Deadlift PR Day",
+      "photo_filename": "demo-workout-14.jpeg",
+      "notes": "Testing 1RM after training cycle",
+      "exercises": [
+        {
+          "name": "Deadlifts",
+          "sets": [
+            {"reps": 5, "weight": 100, "unit": "kg", "notes": "warmup"},
+            {"reps": 3, "weight": 120, "unit": "kg", "notes": null},
+            {"reps": 1, "weight": 140, "unit": "kg", "notes": null},
+            {"reps": 1, "weight": 150, "unit": "kg", "notes": "felt good"},
+            {"reps": 1, "weight": 160, "unit": "kg", "notes": "NEW PR!!!"}
+          ]
+        },
+        {
+          "name": "Rack Pulls",
+          "sets": [
+            {"reps": 5, "weight": 140, "unit": "kg", "notes": null},
+            {"reps": 5, "weight": 140, "unit": "kg", "notes": null}
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2024-12-11",
+      "title": "Light Recovery Session",
+      "photo_filename": "demo-workout-15.jpg",
+      "notes": "Just moving, not pushing hard",
+      "exercises": [
+        {
+          "name": "Cycling",
+          "sets": [
+            {"reps": 20, "weight": 0, "unit": "kg", "notes": "20 minutes"}
+          ]
+        },
+        {
+          "name": "Bodyweight Squats",
+          "sets": [
+            {"reps": 30, "weight": 0, "unit": "kg", "notes": null},
+            {"reps": 30, "weight": 0, "unit": "kg", "notes": null}
+          ]
+        },
+        {
+          "name": "Planks",
+          "sets": [
+            {"reps": 60, "weight": 0, "unit": "kg", "notes": "60 seconds"},
+            {"reps": 60, "weight": 0, "unit": "kg", "notes": "60 seconds"}
+          ]
+        }
+      ]
+    }
+  ]
+}
+

@@ -23,5 +23,12 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+
+        // Seed demo user in local/testing environments
+        if (app()->environment(['local', 'testing'])) {
+            $this->call([
+                DemoUserSeeder::class,
+            ]);
+        }
     }
 }
