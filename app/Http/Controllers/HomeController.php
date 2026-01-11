@@ -15,7 +15,7 @@ class HomeController extends Controller
     public function index(): Response
     {
         $user = Auth::user();
-        
+
         // Get recent workouts (last 5)
         $recentWorkouts = Workout::where('user_id', $user->id)
             ->with('sets')
@@ -42,11 +42,13 @@ class HomeController extends Controller
 
         // Calculate stats
         $weekStart = now()->startOfWeek();
-        
+
         $stats = [
             'weeklyWorkouts' => Workout::where('user_id', $user->id)
                 ->where('date', '>=', $weekStart)
                 ->count(),
+            'totalWorkouts' => Workout::where('user_id', $user->id)->count(),
+            'daysSinceLastWorkout' => $this->calculateDaysSinceLastWorkout($user->id),
             'streak' => $this->calculateStreak($user->id),
             'totalVolume' => $this->calculateTotalVolume($user->id),
         ];
@@ -78,18 +80,17 @@ class HomeController extends Controller
 
         foreach ($workoutDates as $workoutDate) {
             $date = \Carbon\Carbon::parse($workoutDate)->startOfDay();
-            
+
             // Check if workout is on expected date
             if ($date->equalTo($expectedDate)) {
                 $streak++;
                 $expectedDate->subDay();
-            } 
+            }
             // Allow for today not having a workout yet if it's the first check
             elseif ($streak === 0 && $date->equalTo($expectedDate->subDay())) {
                 $streak++;
                 $expectedDate->subDay();
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -120,6 +121,22 @@ class HomeController extends Controller
         }
 
         return round($totalVolume, 2);
+    }
+
+    /**
+     * Calculate days since last workout
+     */
+    private function calculateDaysSinceLastWorkout(int $userId): int
+    {
+        $lastWorkout = Workout::where('user_id', $userId)
+            ->orderBy('date', 'desc')
+            ->first();
+
+        if (!$lastWorkout) {
+            return 0; // Or handle as "never"
+        }
+
+        return \Carbon\Carbon::parse($lastWorkout->date)->startOfDay()->diffInDays(now()->startOfDay());
     }
 }
 

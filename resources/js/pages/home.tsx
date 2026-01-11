@@ -5,7 +5,7 @@ import { home } from '@/routes';
 import workouts from '@/routes/workouts';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { BarChart3, Camera, Clock, Dumbbell, Settings, Zap } from 'lucide-react';
+import { BarChart3, Camera, Clock, Dumbbell, Flame, Settings, Zap, Play, Send, Sparkles } from 'lucide-react';
 import { type ReactNode } from 'react';
 
 interface RecentWorkout {
@@ -18,6 +18,8 @@ interface RecentWorkout {
 
 interface Stats {
     weeklyWorkouts: number;
+    totalWorkouts: number;
+    daysSinceLastWorkout: number;
     streak: number;
     totalVolume: number;
 }
@@ -40,6 +42,9 @@ export default function Home({ recentWorkouts, stats }: HomeProps) {
     };
 
     const formatVolume = (volume: number) => {
+        if (volume >= 1000) {
+            return (volume / 1000).toFixed(1) + 'k';
+        }
         return new Intl.NumberFormat('en-US').format(Math.round(volume));
     };
 
@@ -52,238 +57,263 @@ export default function Home({ recentWorkouts, stats }: HomeProps) {
             .slice(0, 2);
     };
 
+    const getFirstName = (name: string) => {
+        return name.split(' ')[0] + '.';
+    };
+
+    const getWelcomeMessage = () => {
+        const days = stats.daysSinceLastWorkout;
+        if (days === 0) {
+            return "You worked out today. Great job keeping the streak alive!";
+        } else if (days === 1) {
+            return "You worked out yesterday. Ready for another session?";
+        } else if (days > 7) {
+            return `It's been ${days} days. Time to get back on track!`;
+        } else {
+            return `You haven't logged in in ${days} days. Ready to crush some weights?`;
+        }
+    };
+
     return (
         <>
             <Head title="Home" />
-            <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
+            <div className="flex min-h-screen flex-col bg-white dark:bg-gray-950 pb-32">
                 {/* Header */}
-                <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-950">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <Zap className="size-6 fill-lime-400 text-lime-400" />
-                            <h1 className="text-xl font-black tracking-tight">LOG.AI</h1>
-                        </div>
-                        <p className="text-xs font-medium uppercase tracking-widest text-gray-500">
-                            Digital Logbook
-                        </p>
+                <header className="flex items-center justify-between px-6 py-4">
+                    <div className="flex items-center gap-2">
+                        <Flame className="size-5 text-lime-400 fill-lime-400" />
+                        <span className="font-bold tracking-tight text-gray-900 dark:text-white">LOG.AI</span>
                     </div>
-                    <Avatar>
+                    <Avatar className="size-8">
                         <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback className="bg-gray-200 text-sm font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                        <AvatarFallback className="bg-gray-100 text-xs font-bold text-gray-700 dark:bg-gray-800 dark:text-gray-300">
                             {getUserInitials(user.name)}
                         </AvatarFallback>
                     </Avatar>
                 </header>
 
-                {/* Main Content */}
-                <main className="flex-1 overflow-y-auto pb-20">
-                    <div className="mx-auto max-w-2xl px-4 py-6">
-                        {/* Hero Section - Scan Log CTA */}
-                        <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 p-8 shadow-lg dark:from-gray-800 dark:to-gray-900">
-                            {/* Background Pattern */}
-                            <div className="absolute inset-0 opacity-10">
-                                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')]" />
+                <main className="px-6">
+                    {/* Welcome Section */}
+                    <div className="mb-8 mt-2">
+                        <h1 className="text-4xl font-black tracking-tight text-lime-500 mb-2">
+                            {getFirstName(user.name)}
+                        </h1>
+                        <p className="text-gray-500 font-medium leading-relaxed dark:text-gray-400 max-w-sm">
+                            {getWelcomeMessage()}
+                        </p>
+                    </div>
+
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-3 gap-3 mb-8">
+                        <StatCard
+                            label="Streak"
+                            value={`${stats.streak} Days`}
+                            subtext="Keep it up!"
+                            icon={<Flame className="size-4 text-lime-500" />}
+                            bg="bg-red-50 dark:bg-red-900/10"
+                        />
+                        <StatCard
+                            label="Volume"
+                            value={`${formatVolume(stats.totalVolume)}`}
+                            subtext="Last 7 days"
+                            icon={<BarChart3 className="size-4 text-lime-500" />}
+                            bg="bg-lime-50 dark:bg-lime-900/10"
+                        />
+                        <StatCard
+                            label="Workouts"
+                            value={stats.totalWorkouts.toString()}
+                            subtext="Total logs"
+                            icon={<Dumbbell className="size-4 text-lime-500" />}
+                            bg="bg-orange-50 dark:bg-orange-900/10"
+                        />
+                    </div>
+
+                    {/* Recommended Card */}
+                    <Card className="mb-8 overflow-hidden border-0 bg-gray-900 text-white shadow-xl dark:bg-gray-800">
+                        <CardContent className="p-6 relative">
+                            {/* Background accent */}
+                            <div className="absolute top-0 right-0 p-6 opacity-10">
+                                <Dumbbell className="size-24 rotate-12" />
                             </div>
 
-                            {/* Content */}
-                            <div className="relative flex flex-col items-center justify-center space-y-4">
-                                <Link href={workouts.upload().url}>
-                                    <Button
-                                        size="lg"
-                                        className="group relative size-32 rounded-full bg-lime-400 p-0 shadow-2xl transition-all hover:scale-105 hover:bg-lime-500 hover:shadow-lime-500/50 active:scale-95 dark:bg-lime-500 dark:hover:bg-lime-600"
-                                    >
-                                        <div className="absolute inset-0 animate-pulse rounded-full bg-lime-400/50 dark:bg-lime-500/50" />
-                                        <Camera className="relative size-12 text-gray-900" strokeWidth={2.5} />
-                                    </Button>
-                                </Link>
-                                <div className="text-center">
-                                    <h2 className="text-3xl font-black uppercase tracking-tight text-gray-900 dark:text-gray-100">
-                                        Scan Log
-                                    </h2>
-                                    <p className="mt-1 text-sm font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
-                                        Capture Workout Data
-                                    </p>
+                            <div className="flex justify-between items-start mb-6 relative z-10">
+                                <span className="inline-block rounded bg-lime-500/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-lime-400">
+                                    Recommended
+                                </span>
+                                <span className="text-xs font-medium text-gray-400">
+                                    Today, 5:00 PM
+                                </span>
+                            </div>
+
+                            <h3 className="text-2xl font-black mb-2 relative z-10">
+                                Push Day: Chest & Tris
+                            </h3>
+
+                            <p className="text-gray-400 text-sm mb-6 leading-relaxed relative z-10">
+                                Based on your history, it's time to hit chest. Focus on incline press progressive overload today.
+                            </p>
+
+                            <div className="flex items-center justify-between relative z-10">
+                                <div className="flex -space-x-2">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="size-8 rounded-full bg-gray-700 border-2 border-gray-900 flex items-center justify-center">
+                                            <Dumbbell className="size-3 text-gray-400" />
+                                        </div>
+                                    ))}
+                                    <div className="size-8 rounded-full bg-gray-800 border-2 border-gray-900 flex items-center justify-center text-[10px] font-bold">
+                                        +4
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        {/* Stats Dashboard */}
-                        <div className="mb-6 grid grid-cols-3 gap-3">
-                            <StatCard
-                                icon={<Dumbbell className="size-4 text-lime-500" />}
-                                label="This Week"
-                                value={stats.weeklyWorkouts.toString()}
-                            />
-                            <StatCard
-                                icon={<Zap className="size-4 fill-lime-500 text-lime-500" />}
-                                label="Streak"
-                                value={stats.streak.toString()}
-                            />
-                            <StatCard
-                                icon={<BarChart3 className="size-4 text-lime-500" />}
-                                label="Volume"
-                                value={`${formatVolume(stats.totalVolume)}KG`}
-                            />
-                        </div>
-
-                        {/* Recent Logs Section */}
-                        <div className="mb-6">
-                            <div className="mb-4 flex items-center justify-between">
-                                <h3 className="text-lg font-bold uppercase tracking-tight text-gray-900 dark:text-gray-100">
-                                    Recent Logs
-                                </h3>
-                                <Link href={workouts.index().url}>
-                                    <Button variant="ghost" size="sm" className="text-xs font-semibold uppercase text-lime-600 hover:text-lime-700 dark:text-lime-500 dark:hover:text-lime-400">
-                                        View All
+                                <Link href={workouts.upload().url}>
+                                    <Button className="bg-white text-gray-900 hover:bg-gray-100 font-bold rounded-xl px-6">
+                                        Start Log
                                     </Button>
                                 </Link>
                             </div>
+                        </CardContent>
+                    </Card>
 
-                            {/* Workout Cards */}
-                            {recentWorkouts.length === 0 ? (
-                                <Card className="bg-white dark:bg-gray-900">
-                                    <CardContent className="flex flex-col items-center justify-center py-12">
-                                        <Dumbbell className="mb-4 size-12 text-gray-400" />
-                                        <h4 className="mb-2 text-base font-semibold text-gray-900 dark:text-gray-100">
-                                            No workouts yet
-                                        </h4>
-                                        <p className="mb-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                                            Scan your first workout photo to get started!
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            ) : (
-                                <div className="space-y-3">
-                                    {recentWorkouts.map((workout) => {
-                                        const { day, month } = formatDate(workout.date);
-                                        return (
-                                            <Link
-                                                key={workout.id}
-                                                href={workouts.show(workout.id).url}
-                                            >
-                                                <Card className="overflow-hidden bg-white transition-all hover:shadow-md dark:bg-gray-900">
-                                                    <CardContent className="flex items-center gap-4 p-4">
-                                                        {/* Date Badge */}
-                                                        <div className="flex size-16 shrink-0 flex-col items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
-                                                            <div className="text-2xl font-black leading-none text-gray-900 dark:text-gray-100">
-                                                                {day}
-                                                            </div>
-                                                            <div className="text-xs font-bold leading-none text-gray-600 dark:text-gray-400">
-                                                                {month}
-                                                            </div>
-                                                        </div>
+                    {/* Recent Activity */}
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">
+                                Recent Activity
+                            </h3>
+                            <Link href={workouts.index().url} className="text-xs font-bold text-lime-500 hover:text-lime-600">
+                                View All
+                            </Link>
+                        </div>
 
-                                                        {/* Workout Info */}
-                                                        <div className="flex-1">
-                                                            <h4 className="mb-1 text-base font-bold uppercase leading-tight text-gray-900 dark:text-gray-100">
-                                                                {workout.title || 'Workout'}
-                                                            </h4>
-                                                            <div className="flex items-center gap-4 text-xs font-medium text-gray-600 dark:text-gray-400">
-                                                                <span className="flex items-center gap-1">
-                                                                    <Dumbbell className="size-3" />
-                                                                    {workout.total_exercises} Exercise{workout.total_exercises !== 1 ? 's' : ''}
-                                                                </span>
-                                                                <span className="font-bold text-gray-900 dark:text-gray-100">
-                                                                    {formatVolume(workout.total_volume)}kg
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Arrow */}
-                                                        <div className="shrink-0 text-gray-400">
-                                                            <svg
-                                                                width="20"
-                                                                height="20"
-                                                                viewBox="0 0 20 20"
-                                                                fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <path
-                                                                    d="M7.5 15L12.5 10L7.5 5"
-                                                                    stroke="currentColor"
-                                                                    strokeWidth="2"
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                />
-                                                            </svg>
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            </Link>
-                                        );
-                                    })}
-
-                                    {/* Add Workout Button */}
-                                    <Link href={workouts.upload().url}>
-                                        <Card className="overflow-hidden border-2 border-dashed border-gray-300 bg-transparent transition-all hover:border-lime-500 hover:bg-lime-50/50 dark:border-gray-700 dark:hover:border-lime-500 dark:hover:bg-lime-950/20">
-                                            <CardContent className="flex items-center justify-center gap-2 p-6">
-                                                <Camera className="size-5 text-gray-500 dark:text-gray-400" />
-                                                <span className="text-sm font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-                                                    Add New Workout
-                                                </span>
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
+                        <div className="space-y-3 mb-20">
+                            {recentWorkouts.map((workout) => (
+                                <Link key={workout.id} href={workouts.show(workout.id).url}>
+                                    <Card className="border-none shadow-sm bg-gray-50 dark:bg-gray-900/50">
+                                        <CardContent className="flex items-center p-4">
+                                            <div className="mr-4 flex size-12 shrink-0 flex-col items-center justify-center rounded-xl bg-white text-xs font-bold shadow-sm dark:bg-gray-800">
+                                                <span className="text-lime-500 uppercase">{formatDate(workout.date).month}</span>
+                                                <span className="text-lg text-gray-900 dark:text-white">{formatDate(workout.date).day}</span>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-bold text-gray-900 truncate dark:text-white text-base">
+                                                    {workout.title || 'Workout'}
+                                                </h4>
+                                                <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                                                    <Dumbbell className="size-3" />
+                                                    <span>{workout.total_exercises} Exercises</span>
+                                                    <span className="text-gray-300">•</span>
+                                                    <span>{formatVolume(workout.total_volume)}kg</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-gray-400">
+                                                <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M1 9L5 5L1 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            ))}
+                            {recentWorkouts.length === 0 && (
+                                <div className="text-center py-8 text-gray-400">
+                                    No recent activity
                                 </div>
                             )}
                         </div>
                     </div>
                 </main>
 
-                {/* Bottom Navigation */}
+                <AskAIBar />
                 <BottomNavigation />
             </div>
         </>
     );
 }
 
-// Stats Card Component
-function StatCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+function StatCard({
+    label,
+    value,
+    subtext,
+    icon,
+    bg = "bg-white dark:bg-gray-900"
+}: {
+    label: string;
+    value: string;
+    subtext?: string;
+    icon: ReactNode;
+    bg?: string;
+}) {
     return (
-        <Card className="bg-white shadow-sm dark:bg-gray-900">
-            <CardContent className="flex flex-col items-center justify-center p-4">
-                <div className="mb-2">{icon}</div>
-                <div className="mb-1 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    {label}
-                </div>
-                <div className="text-2xl font-black text-gray-900 dark:text-gray-100">
-                    {value}
-                </div>
-            </CardContent>
-        </Card>
+        <div className={`flex flex-col p-4 rounded-3xl ${bg} shadow-sm border border-gray-100 dark:border-gray-800`}>
+            <div className="mb-3 size-8 rounded-full bg-gray-50/50 dark:bg-white/10 flex items-center justify-center backdrop-blur-sm">
+                {icon}
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">{label}</span>
+            <span className="text-xl font-black text-gray-900 dark:text-white mb-0.5 leading-none">{value}</span>
+            {subtext && <span className="text-[10px] text-gray-400 font-medium">{subtext}</span>}
+        </div>
     );
 }
 
-// Bottom Navigation Component
+function AskAIBar() {
+    return (
+        <div className="fixed bottom-24 left-6 right-6 z-40">
+            <div className="bg-gray-900 dark:bg-gray-800 rounded-full py-3 px-5 flex items-center shadow-lg border border-gray-800">
+                <div className="size-8 rounded-full bg-lime-500/20 flex items-center justify-center mr-3">
+                    <Sparkles className="size-4 text-lime-400" />
+                </div>
+                <input
+                    type="text"
+                    placeholder="Ask AI or log workout..."
+                    className="flex-1 bg-transparent border-none text-white placeholder-gray-500 text-sm focus:ring-0 px-0"
+                />
+                <button className="bg-white rounded-full p-2 size-8 flex items-center justify-center">
+                    <Send className="size-4 text-gray-900 ml-0.5" />
+                </button>
+            </div>
+        </div>
+    )
+}
+
 function BottomNavigation() {
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950">
-            <div className="mx-auto flex max-w-2xl items-center justify-around px-4 py-3">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900 text-white rounded-t-[2rem] shadow-2xl px-6 pb-6 pt-4">
+            <div className="flex items-center justify-between relative">
                 <NavItem href={workouts.index().url} icon={<Clock className="size-5" />} label="History" />
                 <NavItem href={home().url} icon={<Dumbbell className="size-5" />} label="Today" active />
+
+                {/* Spacer for Camera Button */}
+                <div className="w-12 h-12"></div>
+
                 <NavItem href="/stats" icon={<BarChart3 className="size-5" />} label="Stats" />
                 <NavItem href="/settings" icon={<Settings className="size-5" />} label="Settings" />
+
+                {/* Floating Camera Button */}
+                <div className="absolute left-1/2 -translate-x-1/2 -top-10">
+                    <Link href={workouts.upload().url}>
+                        <div className="size-16 rounded-full bg-lime-400 flex items-center justify-center shadow-[0_0_20px_rgba(163,230,53,0.4)] border-[6px] border-white dark:border-gray-950 transition-transform hover:scale-105 active:scale-95">
+                            <Camera className="size-7 text-gray-900" strokeWidth={2.5} />
+                        </div>
+                    </Link>
+                </div>
             </div>
-        </nav>
+        </div>
     );
 }
 
-// Nav Item Component
 function NavItem({ href, icon, label, active = false }: { href: string; icon: ReactNode; label: string; active?: boolean }) {
     return (
         <Link
             href={href}
-            className={`flex flex-col items-center gap-1 transition-colors ${
-                active
-                    ? 'text-lime-600 dark:text-lime-500'
-                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100'
-            }`}
+            className={`flex flex-col items-center gap-1 transition-colors ${active
+                    ? 'text-lime-400'
+                    : 'text-gray-500 hover:text-gray-300'
+                }`}
         >
-            <div className={active ? 'rounded-full bg-lime-100 p-1.5 dark:bg-lime-950' : ''}>
+            <div className={active ? '' : ''}>
                 {icon}
             </div>
             <span className="text-[10px] font-bold uppercase tracking-wide">{label}</span>
         </Link>
     );
 }
-
