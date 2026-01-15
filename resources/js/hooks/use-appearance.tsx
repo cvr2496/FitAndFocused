@@ -16,7 +16,7 @@ export function initializeTheme() {
 export function useAppearance() {
     const [appearance] = useState<Appearance>('dark');
 
-    const updateAppearance = useCallback((_mode: Appearance) => {
+    const updateAppearance = useCallback(() => {
         // Force dark mode - no-op for compatibility
         applyTheme();
     }, []);

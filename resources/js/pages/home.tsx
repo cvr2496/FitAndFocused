@@ -5,8 +5,9 @@ import { home } from '@/routes';
 import workouts from '@/routes/workouts';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { BarChart3, Camera, Clock, Dumbbell, Flame, Settings, Zap, Play, Send, Sparkles } from 'lucide-react';
-import { type ReactNode } from 'react';
+import axios from 'axios';
+import { BarChart3, Camera, Clock, Dumbbell, Flame, Settings, Send, Sparkles } from 'lucide-react';
+import React, { type ReactNode } from 'react';
 
 interface RecentWorkout {
     id: number;
@@ -24,12 +25,19 @@ interface Stats {
     totalVolume: number;
 }
 
+interface Recommendation {
+    title: string;
+    description: string;
+    exercises: { name: string; sets: string; reps: string; notes?: string }[];
+}
+
 interface HomeProps {
     recentWorkouts: RecentWorkout[];
     stats: Stats;
+    recommendation: Recommendation;
 }
 
-export default function Home({ recentWorkouts, stats }: HomeProps) {
+export default function Home({ recentWorkouts, stats, recommendation }: HomeProps) {
     const { auth } = usePage<SharedData>().props;
     const user = auth.user;
 
@@ -146,25 +154,34 @@ export default function Home({ recentWorkouts, stats }: HomeProps) {
                             </div>
 
                             <h3 className="text-2xl font-black mb-2 relative z-10">
-                                Push Day: Chest & Tris
+                                {recommendation.title}
                             </h3>
 
                             <p className="text-gray-400 text-sm mb-6 leading-relaxed relative z-10">
-                                Based on your history, it's time to hit chest. Focus on incline press progressive overload today.
+                                {recommendation.description}
                             </p>
 
-                            <div className="flex items-center justify-between relative z-10">
-                                <div className="flex -space-x-2">
-                                    {[1, 2, 3].map((i) => (
-                                        <div key={i} className="size-8 rounded-full bg-gray-700 border-2 border-gray-900 flex items-center justify-center">
-                                            <Dumbbell className="size-3 text-gray-400" />
+                            {/* Exercise List */}
+                            {recommendation.exercises && recommendation.exercises.length > 0 && (
+                                <div className="relative z-10 space-y-2 mb-6">
+                                    {recommendation.exercises.map((exercise, index) => (
+                                        <div key={index} className="flex items-start gap-3 bg-gray-800/50 rounded-lg p-3">
+                                            <div className="flex-shrink-0 size-6 rounded-full bg-lime-500/20 flex items-center justify-center text-[10px] font-bold text-lime-400">
+                                                {index + 1}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="font-bold text-sm text-white">{exercise.name}</span>
+                                                    <span className="text-xs text-gray-500">{exercise.sets} × {exercise.reps}</span>
+                                                </div>
+                                                <p className="text-xs text-gray-400 leading-relaxed">{exercise.notes}</p>
+                                            </div>
                                         </div>
                                     ))}
-                                    <div className="size-8 rounded-full bg-gray-800 border-2 border-gray-900 flex items-center justify-center text-[10px] font-bold">
-                                        +4
-                                    </div>
                                 </div>
+                            )}
 
+                            <div className="flex items-center justify-between relative z-10">
                                 <Link href={workouts.upload().url}>
                                     <Button className="bg-white text-gray-900 hover:bg-gray-100 font-bold rounded-xl px-6">
                                         Start Log
@@ -223,7 +240,7 @@ export default function Home({ recentWorkouts, stats }: HomeProps) {
                     </div>
                 </main>
 
-                <AskAIBar />
+                <AskAIBar recommendation={recommendation} />
                 <BottomNavigation />
             </div>
         </>
@@ -255,23 +272,53 @@ function StatCard({
     );
 }
 
-function AskAIBar() {
+function AskAIBar({ recommendation }: { recommendation?: Recommendation }) {
+    const [query, setQuery] = React.useState('');
+    const [loading, setLoading] = React.useState(false);
+
+    const handleAsk = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!query.trim()) return;
+
+        setLoading(true);
+        try {
+            const res = await axios.post('/ai/chat', {
+                message: query,
+                context: recommendation
+            });
+            alert(res.data.response); // Simple alert for now, can be improved to a modal later
+            setQuery('');
+        } catch (error) {
+            console.error('AI Chat Error:', error);
+            alert('Something went wrong. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <div className="fixed bottom-24 left-6 right-6 z-40">
+        <form onSubmit={handleAsk} className="fixed bottom-24 left-6 right-6 z-40">
             <div className="bg-gray-900 dark:bg-gray-800 rounded-full py-3 px-5 flex items-center shadow-lg border border-gray-800">
                 <div className="size-8 rounded-full bg-lime-500/20 flex items-center justify-center mr-3">
                     <Sparkles className="size-4 text-lime-400" />
                 </div>
                 <input
                     type="text"
-                    placeholder="Ask AI or log workout..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={loading ? "Thinking..." : "Ask AI or log workout..."}
+                    disabled={loading}
                     className="flex-1 bg-transparent border-none text-white placeholder-gray-500 text-sm focus:ring-0 px-0"
                 />
-                <button className="bg-white rounded-full p-2 size-8 flex items-center justify-center">
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-white rounded-full p-2 size-8 flex items-center justify-center disabled:opacity-50"
+                >
                     <Send className="size-4 text-gray-900 ml-0.5" />
                 </button>
             </div>
-        </div>
+        </form>
     )
 }
 
@@ -306,8 +353,8 @@ function NavItem({ href, icon, label, active = false }: { href: string; icon: Re
         <Link
             href={href}
             className={`flex flex-col items-center gap-1 transition-colors ${active
-                    ? 'text-lime-400'
-                    : 'text-gray-500 hover:text-gray-300'
+                ? 'text-lime-400'
+                : 'text-gray-500 hover:text-gray-300'
                 }`}
         >
             <div className={active ? '' : ''}>
