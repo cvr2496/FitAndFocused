@@ -37,7 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->where('path', '.*')
         ->name('api.workouts.photo');
     // AI Helper
-    Route::post('ai/chat', [\App\Http\Controllers\AiChatController::class, 'chat'])->name('ai.chat');
+    Route::post('ai/chat', [\App\Features\AiCoach\Controllers\AiChatController::class, 'chat'])->name('ai.chat');
 });
 
 require __DIR__ . '/settings.php';

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Workout;
-use App\Services\AnthropicService;
+use App\Features\AiCoach\AiCoachService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -13,7 +13,7 @@ class HomeController extends Controller
     /**
      * Display the home screen with stats and recent workouts
      */
-    public function index(AnthropicService $ai): Response
+    public function index(AiCoachService $ai): Response
     {
         $user = Auth::user();
 
@@ -27,7 +27,7 @@ class HomeController extends Controller
             ->map(function ($workout) {
                 return [
                     'id' => $workout->id,
-                    'date' => $workout->date->format('Y-m-d'),
+                    'date' => \Illuminate\Support\Carbon::parse($workout->date)->format('Y-m-d'),
                     'title' => $workout->title,
                     'total_exercises' => $workout->sets->pluck('exercise_name')->unique()->count(),
                     'total_volume' => $workout->sets->sum(function ($set) {
