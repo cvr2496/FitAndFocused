@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Workout;
+use App\Services\AnthropicService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,7 +13,7 @@ class HomeController extends Controller
     /**
      * Display the home screen with stats and recent workouts
      */
-    public function index(): Response
+    public function index(AnthropicService $ai): Response
     {
         $user = Auth::user();
 
@@ -53,9 +54,33 @@ class HomeController extends Controller
             'totalVolume' => $this->calculateTotalVolume($user->id),
         ];
 
+        // Get AI Recommendation (Cache for 12 hours)
+        $recommendation = \Illuminate\Support\Facades\Cache::remember(
+            'workout_recommendation_' . $user->id . '_' . now()->format('Y-m-d'),
+            now()->addHours(12),
+            function () use ($ai, $user) {
+                try {
+                    $recommendation = $ai->generateRecommendation($user);
+                    return $recommendation ?? [
+                        'title' => 'Daily Recommendation', 
+                        'description' => 'Could not generate workout.', 
+                        'exercises' => []
+                    ];
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('AI Recommendation Failed: ' . $e->getMessage());
+                    return [
+                        'title' => 'Daily Recommendation', 
+                        'description' => 'Unable to generate recommendation at this time. Please try again later.', 
+                        'exercises' => []
+                    ];
+                }
+            }
+        );
+
         return Inertia::render('home', [
             'recentWorkouts' => $recentWorkouts,
             'stats' => $stats,
+            'recommendation' => $recommendation
         ]);
     }
 
