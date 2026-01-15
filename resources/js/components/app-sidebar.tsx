@@ -14,7 +14,7 @@ import { home } from '@/routes';
 import workouts from '@/routes/workouts';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Dumbbell, Folder, LayoutGrid } from 'lucide-react';
+import { BookOpen, Dumbbell } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [

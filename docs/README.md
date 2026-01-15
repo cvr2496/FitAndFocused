@@ -24,6 +24,12 @@ Welcome to the FitAndFocused documentation! This folder contains comprehensive t
   - Controller methods
   - Frontend integration
 
+- **[AI.md](AI.md)** - AI-powered workout recommendations
+  - Claude 4.5 Sonnet integration
+  - Workout recommendation generation
+  - Chat functionality
+  - CLI testing tools
+
 ### Quick Links
 
 | Topic | File | Description |
@@ -34,6 +40,8 @@ Welcome to the FitAndFocused documentation! This folder contains comprehensive t
 | Queries | [DATABASE.md](DATABASE.md#querying-examples) | Common database queries |
 | API Routes | [API.md](API.md#routes) | HTTP endpoints |
 | Controllers | [API.md](API.md#controllers) | Backend logic |
+| AI Recommendations | [AI.md](AI.md) | AI-powered workout suggestions |
+| CLI Testing | [AI.md](AI.md#testing) | Test AI without frontend |
 
 ## 🚀 Quick Start
 
@@ -85,33 +93,38 @@ Welcome to the FitAndFocused documentation! This folder contains comprehensive t
 ```
 ┌─────────────────────────────────────────────────────┐
 │                  Frontend (React)                    │
-│              resources/js/pages/workouts/            │
-│         - upload.tsx (Photo upload)                  │
-│         - verify.tsx (Data verification)             │
-│         - index.tsx (Workout list)                   │
-│         - show.tsx (Workout details)                 │
+│              resources/js/pages/                     │
+│         - home.tsx (AI recommendations)              │
+│         - workouts/upload.tsx (Photo upload)         │
+│         - workouts/verify.tsx (Data verification)    │
+│         - workouts/index.tsx (Workout list)          │
+│         - workouts/show.tsx (Workout details)        │
 └────────────────────┬────────────────────────────────┘
                      │ Inertia.js
 ┌────────────────────┴────────────────────────────────┐
 │            Controllers (Laravel)                     │
 │         app/Http/Controllers/                        │
+│         - HomeController.php (AI recommendations)    │
+│         - AiChatController.php (AI chat)             │
 │         - WorkoutUploadController.php                │
 │         - WorkoutController.php                      │
-└────────────────────┬────────────────────────────────┘
-                     │ Eloquent ORM
-┌────────────────────┴────────────────────────────────┐
-│              Models (Eloquent)                       │
-│              app/Models/                             │
-│              - Workout.php                           │
-│              - Set.php                               │
-└────────────────────┬────────────────────────────────┘
-                     │ Database Abstraction
-┌────────────────────┴────────────────────────────────┐
-│            Database (SQLite)                         │
-│         database/database.sqlite                     │
-│         - workouts table                             │
-│         - sets table (with FK cascade)               │
-└──────────────────────────────────────────────────────┘
+└────────────────────┴─────────┬──────────────────────┘
+                     │          │
+           Eloquent ORM    ┌───┴──────────────────────┐
+                 │          │   AI Services            │
+┌────────────────┴──┐       │   - AnthropicService.php │
+│   Models          │       │   (Claude 3.5 Sonnet)    │
+│   - Workout.php   │       └──────────────────────────┘
+│   - Set.php       │
+└───────────┬───────┘
+            │ Database Abstraction
+┌───────────┴────────────────────────────────────────┐
+│            Database (SQLite)                        │
+│         database/database.sqlite                    │
+│         - workouts table                            │
+│         - sets table (with FK cascade)              │
+│         - exercises table (reference data)          │
+└─────────────────────────────────────────────────────┘
 ```
 
 ## 🗄️ Database Design Philosophy
@@ -188,6 +201,49 @@ FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE
    └─> WorkoutController@show
        └─> Returns workout with exercises grouped
 ```
+
+## 🤖 AI Features
+
+FitAndFocused uses Claude 4.5 Sonnet to provide intelligent workout recommendations.
+
+### AI Recommendation System
+
+**How it works:**
+1. Analyzes your last 3-5 workouts from the database
+2. Identifies muscle groups trained and recovery needs
+3. Generates a contextual recommendation with 6 exercises
+4. Displays on home page with sets, reps, and form notes
+
+**Example output:**
+```
+Pull Day: Back & Biceps Power
+
+Since you last trained chest and triceps on December 28th,
+today is perfect for a pull-focused session...
+
+1. Pull-ups or Lat Pulldown (4 × 6-10)
+   Wide grip for lat width. Control the negative.
+2. Barbell Rows (4 × 8-12)
+   Squeeze shoulder blades together.
+...
+```
+
+### Testing AI Recommendations
+
+```bash
+# Test recommendation generation without frontend
+php artisan ai:test-recommendation 2
+
+# Clear recommendation cache
+php artisan cache:forget workout_recommendation_2_2026-01-11
+```
+
+**Configuration required:**
+```env
+ANTHROPIC_API_KEY=your_api_key_here
+```
+
+See [AI.md](AI.md) for complete documentation.
 
 ## 🧪 Testing
 
@@ -353,7 +409,8 @@ If you encounter issues:
 
 ---
 
-**Last Updated:** December 29, 2025  
+**Last Updated:** January 11, 2026  
 **Database Version:** Initial schema (migrations `2025_12_29_*`)  
-**Laravel Version:** 12.x
+**Laravel Version:** 12.x  
+**AI Model:** Claude 3.5 Sonnet (`claude-sonnet-4-5-20250929`)
 

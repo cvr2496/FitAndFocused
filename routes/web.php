@@ -15,7 +15,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     // Home screen (main dashboard)
     Route::get('home', [HomeController::class, 'index'])->name('home');
-    
+
     // Redirect old dashboard to home
     Route::redirect('dashboard', '/home')->name('dashboard');
 
@@ -27,7 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('workouts/verify', [WorkoutUploadController::class, 'showVerify'])->name('workouts.verify');
     Route::get('workouts/{workout}', [WorkoutController::class, 'show'])->name('workouts.show');
     Route::delete('workouts/{workout}', [WorkoutController::class, 'destroy'])->name('workouts.destroy');
-    
+
     // API endpoints for workout operations
     Route::post('api/workouts/upload', [WorkoutUploadController::class, 'upload'])
         ->name('api.workouts.upload');
@@ -36,6 +36,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/workouts/photos/{path}', [WorkoutUploadController::class, 'getPhoto'])
         ->where('path', '.*')
         ->name('api.workouts.photo');
+    // AI Helper
+    Route::post('ai/chat', [\App\Http\Controllers\AiChatController::class, 'chat'])->name('ai.chat');
 });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';

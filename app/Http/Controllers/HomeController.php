@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Workout;
+use App\Services\AnthropicService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,10 +13,10 @@ class HomeController extends Controller
     /**
      * Display the home screen with stats and recent workouts
      */
-    public function index(): Response
+    public function index(AnthropicService $ai): Response
     {
         $user = Auth::user();
-        
+
         // Get recent workouts (last 5)
         $recentWorkouts = Workout::where('user_id', $user->id)
             ->with('sets')
@@ -42,18 +43,44 @@ class HomeController extends Controller
 
         // Calculate stats
         $weekStart = now()->startOfWeek();
-        
+
         $stats = [
             'weeklyWorkouts' => Workout::where('user_id', $user->id)
                 ->where('date', '>=', $weekStart)
                 ->count(),
+            'totalWorkouts' => Workout::where('user_id', $user->id)->count(),
+            'daysSinceLastWorkout' => $this->calculateDaysSinceLastWorkout($user->id),
             'streak' => $this->calculateStreak($user->id),
             'totalVolume' => $this->calculateTotalVolume($user->id),
         ];
 
+        // Get AI Recommendation (Cache for 12 hours)
+        $recommendation = \Illuminate\Support\Facades\Cache::remember(
+            'workout_recommendation_' . $user->id . '_' . now()->format('Y-m-d'),
+            now()->addHours(12),
+            function () use ($ai, $user) {
+                try {
+                    $recommendation = $ai->generateRecommendation($user);
+                    return $recommendation ?? [
+                        'title' => 'Daily Recommendation', 
+                        'description' => 'Could not generate workout.', 
+                        'exercises' => []
+                    ];
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('AI Recommendation Failed: ' . $e->getMessage());
+                    return [
+                        'title' => 'Daily Recommendation', 
+                        'description' => 'Unable to generate recommendation at this time. Please try again later.', 
+                        'exercises' => []
+                    ];
+                }
+            }
+        );
+
         return Inertia::render('home', [
             'recentWorkouts' => $recentWorkouts,
             'stats' => $stats,
+            'recommendation' => $recommendation
         ]);
     }
 
@@ -78,18 +105,17 @@ class HomeController extends Controller
 
         foreach ($workoutDates as $workoutDate) {
             $date = \Carbon\Carbon::parse($workoutDate)->startOfDay();
-            
+
             // Check if workout is on expected date
             if ($date->equalTo($expectedDate)) {
                 $streak++;
                 $expectedDate->subDay();
-            } 
+            }
             // Allow for today not having a workout yet if it's the first check
             elseif ($streak === 0 && $date->equalTo($expectedDate->subDay())) {
                 $streak++;
                 $expectedDate->subDay();
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -120,6 +146,22 @@ class HomeController extends Controller
         }
 
         return round($totalVolume, 2);
+    }
+
+    /**
+     * Calculate days since last workout
+     */
+    private function calculateDaysSinceLastWorkout(int $userId): int
+    {
+        $lastWorkout = Workout::where('user_id', $userId)
+            ->orderBy('date', 'desc')
+            ->first();
+
+        if (!$lastWorkout) {
+            return 0; // Or handle as "never"
+        }
+
+        return \Carbon\Carbon::parse($lastWorkout->date)->startOfDay()->diffInDays(now()->startOfDay());
     }
 }
 

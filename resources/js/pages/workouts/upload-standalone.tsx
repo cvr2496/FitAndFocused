@@ -7,7 +7,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { type UploadResponse } from '@/types/workout';
 import { Head, router } from '@inertiajs/react';
 import { AlertCircle, Camera, Image as ImageIcon, X } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -83,8 +82,8 @@ export default function WorkoutUploadStandalone() {
                 onError: (errors) => {
                     setError(
                         errors.photo ||
-                            errors.message ||
-                            'Failed to upload photo. Please try again.',
+                        errors.message ||
+                        'Failed to upload photo. Please try again.',
                     );
                 },
                 onFinish: () => {
