@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
-use App\Services\AnthropicService;
+use App\Features\AiCoach\AiCoachService;
 use Illuminate\Console\Command;
 
 class TestAiRecommendation extends Command
@@ -11,7 +11,7 @@ class TestAiRecommendation extends Command
     protected $signature = 'ai:test-recommendation {user_id=2}';
     protected $description = 'Test AI workout recommendation generation';
 
-    public function handle(AnthropicService $ai)
+    public function handle(AiCoachService $ai)
     {
         $userId = $this->argument('user_id');
         $user = User::find($userId);
