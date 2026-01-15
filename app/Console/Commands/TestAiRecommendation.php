@@ -3,15 +3,29 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
-use App\Services\AnthropicService;
+use App\Features\AiCoach\AiCoach;
 use Illuminate\Console\Command;
 
 class TestAiRecommendation extends Command
 {
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
     protected $signature = 'ai:test-recommendation {user_id=2}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
     protected $description = 'Test AI workout recommendation generation';
 
-    public function handle(AnthropicService $ai)
+    /**
+     * Execute the console command.
+     */
+    public function handle(AiCoach $ai)
     {
         $userId = $this->argument('user_id');
         $user = User::find($userId);

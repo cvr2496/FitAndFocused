@@ -207,10 +207,11 @@ try {
 ## Next Steps
 
 1. ✅ Upload photo → Extract data → Navigate to verify page
-2. 🔄 **Current:** Verify page with editable form
-3. 🔜 **Next:** Save verified workout to database
-4. 🔜 **Next:** Workout list page
-5. 🔜 **Next:** Workout detail page
+2. ✅ Verify page with editable form
+3. ✅ Save verified workout to database
+4. ✅ Workout list page
+5. ✅ Workout detail page
+6. ✅ AI Coach recommendations and chat
 
 ## Testing the Flow
 
