@@ -1,6 +1,6 @@
 # AI Workout Recommendations
 
-FitAndFocused integrates Claude 3.5 Sonnet to provide intelligent, contextual workout recommendations based on your training history.
+FitAndFocused integrates Claude 3.5 Sonnet to provide intelligent, contextual workout recommendations based on your training history. The system uses a feature-driven architecture that prioritizes security and modularity.
 
 ## Overview
 
@@ -22,36 +22,45 @@ The AI system analyzes your recent workout history and generates personalized da
 
 ## Architecture
 
+The AI functionality is encapsulated in the `AiCoach` feature module (`app/Features/AiCoach/`), providing a clear separation between business logic, security, and the AI provider.
+
+### Technical Flow
+
+```mermaid
+graph TD
+    A[User / Dashboard] --> B[AiChatController / HomeController]
+    B --> C[AiCoach]
+    C --> D[AnthropicService]
+    C --> E[WorkoutQueryTool]
+    E --> F[(Database)]
+    F -- Scoped Results --> E
+    E --> C
+    D -- AI Response --> C
+    C --> B
+    B --> A
 ```
-┌──────────────────────────────────────┐
-│         HomeController               │
-│   - Generates daily recommendation   │
-│   - Caches for 12 hours              │
-└───────────┬──────────────────────────┘
-            │
-┌───────────▼──────────────────────────┐
-│       AnthropicService               │
-│   - Claude 3.5 Sonnet integration    │
-│   - Tool-use for database queries    │
-│   - JSON extraction & parsing        │
-└───────────┬──────────────────────────┘
-            │
-            ├─► generateRecommendation()
-            ├─► chat()
-            ├─► runLoop() (tool-use handler)
-            └─► executeQuery() (safe SELECT only)
-```
+
+### Core Components
+
+1.  **`AiCoach`** (`app/Features/AiCoach/AiCoach.php`): The primary orchestrator. It handles the high-level prompt engineering and manages the interaction loop between the AI and the database.
+2.  **`WorkoutQueryTool`** (`app/Features/AiCoach/Tools/WorkoutQueryTool.php`): A dedicated security layer for database access. It enforces table whitelisting, prevents modifying queries, and automatically scopes all data access to the authenticated user.
+3.  **`AnthropicService`** (`app/Services/AnthropicService.php`): A pure API wrapper for the Anthropic Claude API. It handles low-level HTTP communication and tool execution loops.
 
 ## API Integration
 
 ### Model
-- **Name**: Claude 3.5 Sonnet
-- **ID**: `claude-sonnet-4-5-20250929`
+- **Name**: Claude 4.5 Sonnet
 - **Provider**: Anthropic
 - **Max Tokens**: 4096
 
-### Tool Use
-The AI has access to the `query_database` tool:
+### Security & Tool Use
+The AI interacts with the database through the `query_database` tool provided by the `WorkoutQueryTool`.
+
+**Security Guards:**
+- **Read-Only**: Only `SELECT` statements are permitted.
+- **Table Whitelisting**: The AI can only access `workouts`, `exercises`, `sets`, and `workout_exercises`.
+- **Sensitive Data Blocking**: Access to `users`, `password_reset_tokens`, and other sensitive tables is strictly blocked at the tool level.
+- **Automatic Scoping**: Every query is automatically modified to include `WHERE user_id = {auth_user_id}` before execution.
 
 ```php
 [
@@ -70,17 +79,13 @@ The AI has access to the `query_database` tool:
 ]
 ```
 
-**Security**: Only SELECT statements are allowed. Any attempt to modify data will be rejected.
-
 ## Recommendation Generation
 
-### System Prompt Structure
-
-The AI follows this workflow:
-1. Query database for last 3-5 workouts
-2. Analyze muscle groups and recovery status
-3. Identify optimal focus for today
-4. Generate 6 exercises with progression
+### Workflow
+1. `AiCoach` receives a request for a recommendation.
+2. It constructs a system prompt defining the persona and output requirements.
+3. The AI uses the `query_database` tool to fetch recent workout history.
+4. `AiCoach` parses the final JSON response into a structured array.
 
 ### Output Format
 
@@ -94,8 +99,7 @@ The AI follows this workflow:
             "sets": "4",
             "reps": "6-10",
             "notes": "Wide grip for lat width. Control the negative for 2-3 seconds."
-        },
-        ...
+        }
     ]
 }
 ```
@@ -117,9 +121,9 @@ The recommendation is automatically displayed on the home page:
 ### Backend (Controller)
 
 ```php
-use App\Services\AnthropicService;
+use App\Features\AiCoach\AiCoach;
 
-public function index(AnthropicService $ai)
+public function index(AiCoach $ai)
 {
     $user = auth()->user();
     
@@ -195,14 +199,6 @@ Add to your `.env`:
 ANTHROPIC_API_KEY=your_api_key_here
 ```
 
-Or configure in `config/services.php`:
-
-```php
-'anthropic' => [
-    'api_key' => env('ANTHROPIC_API_KEY'),
-],
-```
-
 ## Caching Strategy
 
 ### Recommendation Cache
@@ -222,31 +218,18 @@ php artisan cache:clear
 ## Error Handling
 
 ### Fallback Recommendations
-
-If AI generation fails, a default structure is returned:
-
-```php
-[
-    'title' => 'Daily Recommendation',
-    'description' => 'Unable to generate recommendation at this time. Please try again later.',
-    'exercises' => []
-]
-```
+If the AI service is unavailable or errors out, the system returns a graceful fallback message to ensure the dashboard remains functional.
 
 ### Logging
-
-Errors are logged to `storage/logs/laravel.log`:
-
-```
-[2026-01-11 01:22:49] local.ERROR: AI Recommendation Failed: Model not found
-```
+All AI-related interactions and errors are logged to `storage/logs/laravel.log`.
 
 ## Testing
 
-### Unit Tests
+### Automated Tests
 ```bash
-# Test AI service methods
-php artisan test --filter=AnthropicServiceTest
+# Test security and orchestration
+php artisan test --filter=WorkoutQueryToolTest
+php artisan test --filter=AiCoachTest
 ```
 
 ### Manual Testing
@@ -274,20 +257,6 @@ php artisan ai:test-recommendation 2
 - Cached load: < 100ms
 - Navigation timeout increased to handle AI processing
 
-## Troubleshooting
-
-### Issue: "Model not found"
-**Solution**: Verify model ID is correct in `AnthropicService.php`
-
-### Issue: Empty exercises array
-**Solution**: Check AI response logs for JSON parsing errors
-
-### Issue: "Property 'stopReason' does not exist"
-**Solution**: Use `$response->stop_reason` (snake_case) not camelCase
-
-### Issue: Tools not executing
-**Solution**: Verify database queries are valid SELECT statements
-
 ## Future Enhancements
 
 - [ ] Voice input for chat
@@ -297,38 +266,7 @@ php artisan ai:test-recommendation 2
 - [ ] Exercise form video recommendations
 - [ ] Nutrition recommendations based on training goals
 
-## API Reference
-
-### AnthropicService Methods
-
-#### `generateRecommendation(User $user): array`
-Generates a daily workout recommendation.
-
-**Parameters:**
-- `$user` - User model instance
-
-**Returns:**
-```php
-[
-    'title' => string,
-    'description' => string,
-    'exercises' => [
-        ['name' => string, 'sets' => string, 'reps' => string, 'notes' => string],
-        ...
-    ]
-]
-```
-
-#### `chat(string $message, array $context = []): string`
-Handles AI chat interactions.
-
-**Parameters:**
-- `$message` - User's question/message
-- `$context` - Optional context (current recommendation)
-
-**Returns:** String response from AI
-
 ---
 
-**Last Updated:** January 11, 2026  
-**AI Model:** Claude 3.5 Sonnet (`claude-sonnet-4-5-20250929`)
+**Last Updated:** January 15, 2026  
+**AI Model:** Claude 3.5 Sonnet

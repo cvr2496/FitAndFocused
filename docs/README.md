@@ -111,12 +111,18 @@ Welcome to the FitAndFocused documentation! This folder contains comprehensive t
 └────────────────────┴─────────┬──────────────────────┘
                      │          │
            Eloquent ORM    ┌───┴──────────────────────┐
-                 │          │   AI Services            │
-┌────────────────┴──┐       │   - AnthropicService.php │
-│   Models          │       │   (Claude 3.5 Sonnet)    │
-│   - Workout.php   │       └──────────────────────────┘
-│   - Set.php       │
-└───────────┬───────┘
+                 │          │   AI Feature Module      │
+┌────────────────┴──┐       │   app/Features/AiCoach/  │
+│   Models          │       │   - AiCoach.php          │
+│   - Workout.php   │       │   - WorkoutQueryTool.php │
+│   - Set.php       │       └───────────┬──────────────┘
+└───────────┬───────┘                   │
+            │                           │
+            │                  ┌────────▼──────────────┐
+            │                  │   AI Services         │
+            │                  │   - AnthropicService  │
+            └──────────────────┤   (Claude 3.5)        │
+                               └───────────────────────┘
             │ Database Abstraction
 ┌───────────┴────────────────────────────────────────┐
 │            Database (SQLite)                        │
@@ -204,15 +210,18 @@ FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE
 
 ## 🤖 AI Features
 
-FitAndFocused uses Claude 4.5 Sonnet to provide intelligent workout recommendations.
+FitAndFocused uses Claude 3.5 Sonnet to provide intelligent workout recommendations.
 
-### AI Recommendation System
+**Key Architecture Components:**
+- **`AiCoach`**: Orchestrates the AI logical flow and prompt generation.
+- **`WorkoutQueryTool`**: Ensures secure, user-scoped database access for the AI.
+- **`AnthropicService`**: Pure API wrapper for communication with the LLM.
 
 **How it works:**
-1. Analyzes your last 3-5 workouts from the database
-2. Identifies muscle groups trained and recovery needs
-3. Generates a contextual recommendation with 6 exercises
-4. Displays on home page with sets, reps, and form notes
+1. Analyzes your last 3-5 workouts from the database (securely via `WorkoutQueryTool`).
+2. Identifies muscle groups trained and recovery needs.
+3. Generates a contextual recommendation with 6 exercises.
+4. Displays on home page with sets, reps, and form notes.
 
 **Example output:**
 ```
@@ -409,8 +418,8 @@ If you encounter issues:
 
 ---
 
-**Last Updated:** January 11, 2026  
+**Last Updated:** January 15, 2026  
 **Database Version:** Initial schema (migrations `2025_12_29_*`)  
 **Laravel Version:** 12.x  
-**AI Model:** Claude 3.5 Sonnet (`claude-sonnet-4-5-20250929`)
+**AI Model:** Claude 3.5 Sonnet
 

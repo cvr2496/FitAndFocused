@@ -102,7 +102,7 @@ Single Leaning Cable Pushback: 10x12.5lbs
 - **Framework**: Laravel (PHP)
 - **Database**: SQLite (on persistent disk)
 - **Storage**: Local filesystem (`storage/app/uploads/`)
-- **AI**: Anthropic Claude API (vision model)
+- **AI**: Anthropic Claude API (Claude 4.5 Sonnet)
 
 **Frontend:**
 - **Framework**: React
