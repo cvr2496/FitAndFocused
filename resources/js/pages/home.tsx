@@ -219,7 +219,7 @@ export default function Home({ recentWorkouts, stats, recommendation }: HomeProp
                                                     <Dumbbell className="size-3" />
                                                     <span>{workout.total_exercises} Exercises</span>
                                                     <span className="text-gray-300">•</span>
-                                                    <span>{formatVolume(workout.total_volume)}kg</span>
+                                                    <span>{formatVolume(workout.total_volume)}{workout.total_volume >= 1000 ? '' : 'kg'}</span>
                                                 </div>
                                             </div>
                                             <div className="text-gray-400">
