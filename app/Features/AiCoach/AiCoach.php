@@ -6,7 +6,7 @@ use App\Services\AnthropicService;
 use App\Features\AiCoach\Tools\WorkoutQueryTool;
 use Illuminate\Support\Facades\Log;
 
-class AiCoachService
+class AiCoach
 {
     protected AnthropicService $ai;
     protected WorkoutQueryTool $queryTool;

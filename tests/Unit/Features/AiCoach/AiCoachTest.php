@@ -2,14 +2,14 @@
 
 namespace Tests\Unit\Features\AiCoach;
 
-use App\Features\AiCoach\AiCoachService;
+use App\Features\AiCoach\AiCoach;
 use App\Features\AiCoach\Tools\WorkoutQueryTool;
 use App\Services\AnthropicService;
 use App\Models\User;
 use Tests\TestCase;
 use Mockery;
 
-class AiCoachServiceTest extends TestCase
+class AiCoachTest extends TestCase
 {
     protected function tearDown(): void
     {
@@ -21,9 +21,9 @@ class AiCoachServiceTest extends TestCase
     {
         $ai = Mockery::mock(AnthropicService::class);
         $tool = Mockery::mock(WorkoutQueryTool::class);
-        $service = new AiCoachService($ai, $tool);
+        $service = new AiCoach($ai, $tool);
         
-        $this->assertInstanceOf(AiCoachService::class, $service);
+        $this->assertInstanceOf(AiCoach::class, $service);
     }
 
     public function test_generate_recommendation_calls_ai_provider()
@@ -32,7 +32,7 @@ class AiCoachServiceTest extends TestCase
         $tool = Mockery::mock(WorkoutQueryTool::class);
         $user = new User(['id' => 1]);
         
-        $service = new AiCoachService($ai, $tool);
+        $service = new AiCoach($ai, $tool);
 
         $ai->shouldReceive('executeToolLoop')
             ->once()
@@ -51,7 +51,7 @@ class AiCoachServiceTest extends TestCase
     {
         $ai = Mockery::mock(AnthropicService::class);
         $tool = Mockery::mock(WorkoutQueryTool::class);
-        $service = new AiCoachService($ai, $tool);
+        $service = new AiCoach($ai, $tool);
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('User must be authenticated to use AI chat');
@@ -64,7 +64,7 @@ class AiCoachServiceTest extends TestCase
         $ai = Mockery::mock(AnthropicService::class);
         $tool = Mockery::mock(WorkoutQueryTool::class);
         $user = new User(['id' => 1]);
-        $service = new AiCoachService($ai, $tool);
+        $service = new AiCoach($ai, $tool);
 
         $ai->shouldReceive('executeToolLoop')
             ->once()

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Workout;
-use App\Features\AiCoach\AiCoachService;
+use App\Features\AiCoach\AiCoach;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -13,7 +13,7 @@ class HomeController extends Controller
     /**
      * Display the home screen with stats and recent workouts
      */
-    public function index(AiCoachService $ai): Response
+    public function index(AiCoach $ai): Response
     {
         $user = Auth::user();
 
