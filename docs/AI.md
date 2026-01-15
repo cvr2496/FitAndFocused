@@ -1,6 +1,6 @@
 # AI Workout Recommendations
 
-FitAndFocused integrates Claude 3.5 Sonnet to provide intelligent, contextual workout recommendations based on your training history. The system uses a feature-driven architecture that prioritizes security and modularity.
+FitAndFocused integrates Claude 4.5 Sonnet to provide intelligent, contextual workout recommendations based on your training history. The system uses a feature-driven architecture that prioritizes security and modularity.
 
 ## Overview
 
@@ -269,4 +269,4 @@ php artisan ai:test-recommendation 2
 ---
 
 **Last Updated:** January 15, 2026  
-**AI Model:** Claude 3.5 Sonnet
+**AI Model:** Claude 4.5 Sonnet

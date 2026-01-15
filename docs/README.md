@@ -210,7 +210,7 @@ FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE
 
 ## 🤖 AI Features
 
-FitAndFocused uses Claude 3.5 Sonnet to provide intelligent workout recommendations.
+FitAndFocused uses Claude 4.5 Sonnet to provide intelligent workout recommendations.
 
 **Key Architecture Components:**
 - **`AiCoach`**: Orchestrates the AI logical flow and prompt generation.
@@ -421,5 +421,5 @@ If you encounter issues:
 **Last Updated:** January 15, 2026  
 **Database Version:** Initial schema (migrations `2025_12_29_*`)  
 **Laravel Version:** 12.x  
-**AI Model:** Claude 3.5 Sonnet
+**AI Model:** Claude 4.5 Sonnet
 
