@@ -16,7 +16,8 @@ class AiChatController extends Controller
 
         $response = $ai->chat(
             $request->input('message'),
-            $request->input('context', [])
+            $request->input('context', []),
+            $request->user()
         );
 
         return response()->json([

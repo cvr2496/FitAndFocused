@@ -258,21 +258,29 @@ IMPORTANT: Return ONLY the JSON object. No explanations, no markdown code blocks
      *
      * @param string $userMessage
      * @param array $context
+     * @param mixed $user
      * @return string
      */
-    public function chat(string $userMessage, array $context = [])
+    public function chat(string $userMessage, array $context = [], $user = null)
     {
+        if (!$user) {
+            throw new \Exception('User must be authenticated to use AI chat');
+        }
+
         $systemPrompt = "You are an expert fitness coach AI named LOG.AI. Helpful, motivating, and data-driven.
         You have access to the user's workout database via tools. Use SQL to answer questions about progress, history, or specific sets.
+        
+        IMPORTANT: You are querying data for user_id {$user->id}. All queries will be automatically scoped to this user.
+        Do NOT include WHERE user_id = {$user->id} in your queries - this is handled automatically for security.
         
         Context provided about current recommendation: " . json_encode($context) . "
         
         Always verify your SQL before running it. Use the user's specific context.";
 
-        return $this->runLoop($systemPrompt, $userMessage);
+        return $this->runLoop($systemPrompt, $userMessage, $user);
     }
 
-    protected function runLoop(string $system, string $userMessage)
+    protected function runLoop(string $system, string $userMessage, $user = null)
     {
         $messages = [
             ['role' => 'user', 'content' => $userMessage]
@@ -281,13 +289,13 @@ IMPORTANT: Return ONLY the JSON object. No explanations, no markdown code blocks
         $tools = [
             [
                 'name' => 'query_database',
-                'description' => 'Execute a read-only SQL query against the workouts database. Use this to find past workouts, sets, exercises, and volume.',
+                'description' => 'Execute a read-only SQL query against the workouts database. Use this to find past workouts, sets, exercises, and volume. Queries are automatically scoped to the authenticated user.',
                 'input_schema' => [
                     'type' => 'object',
                     'properties' => [
                         'query' => [
                             'type' => 'string',
-                            'description' => 'The SQL query to execute. MUST be a SELECT statement.'
+                            'description' => 'The SQL query to execute. MUST be a SELECT statement. Do NOT include user_id filtering - it is added automatically.'
                         ]
                     ],
                     'required' => ['query']
@@ -316,7 +324,7 @@ IMPORTANT: Return ONLY the JSON object. No explanations, no markdown code blocks
                         $toolUseId = $contentBlock->id;
 
                         if ($toolName === 'query_database') {
-                            $result = $this->executeQuery($toolInputs['query']);
+                            $result = $this->executeQuery($toolInputs['query'], $user);
 
                             $messages[] = [
                                 'role' => 'user',
@@ -340,11 +348,58 @@ IMPORTANT: Return ONLY the JSON object. No explanations, no markdown code blocks
         return "I'm sorry, I needed too many steps to figure this out.";
     }
 
-    protected function executeQuery(string $query)
+    protected function executeQuery(string $query, $user = null)
     {
         // Safety check: ensure only SELECT statements
         if (stripos(trim($query), 'SELECT') !== 0) {
             return ['error' => 'Only SELECT queries are allowed for safety.'];
+        }
+
+        // Whitelist of allowed tables that contain user-specific data
+        $allowedTables = [
+            'workouts',
+            'exercises',
+            'sets',
+            'workout_exercises',
+        ];
+
+        // Block access to sensitive tables
+        $blockedTables = [
+            'users',
+            'password_reset_tokens',
+            'sessions',
+            'personal_access_tokens',
+            'cache',
+            'jobs',
+            'failed_jobs',
+        ];
+
+        // Check for blocked tables
+        foreach ($blockedTables as $table) {
+            if (stripos($query, $table) !== false) {
+                return ['error' => "Access to table '{$table}' is not allowed for security reasons."];
+            }
+        }
+
+        // Validate that query only accesses allowed tables
+        $queryLower = strtolower($query);
+        $hasAllowedTable = false;
+        foreach ($allowedTables as $table) {
+            if (stripos($queryLower, $table) !== false) {
+                $hasAllowedTable = true;
+                break;
+            }
+        }
+
+        if (!$hasAllowedTable) {
+            return ['error' => 'Query must access at least one allowed table: ' . implode(', ', $allowedTables)];
+        }
+
+        // If user is provided, automatically scope the query to that user
+        // This prevents users from accessing other users' data
+        if ($user) {
+            // Parse the query to add user_id filtering
+            $query = $this->addUserScopeToQuery($query, $user->id);
         }
 
         try {
@@ -352,6 +407,43 @@ IMPORTANT: Return ONLY the JSON object. No explanations, no markdown code blocks
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * Add user_id filtering to a SQL query to scope it to a specific user
+     *
+     * @param string $query
+     * @param int $userId
+     * @return string
+     */
+    protected function addUserScopeToQuery(string $query, int $userId): string
+    {
+        // Simple approach: add user_id filter to WHERE clause or create one
+        // This is a basic implementation - for production, consider using a SQL parser
+        
+        $query = trim($query);
+        
+        // Check if query already has WHERE clause
+        if (stripos($query, 'WHERE') !== false) {
+            // Add AND user_id = X to existing WHERE clause
+            $query = preg_replace(
+                '/(WHERE\s+)/i',
+                "$1user_id = {$userId} AND ",
+                $query,
+                1
+            );
+        } else {
+            // Add WHERE user_id = X before ORDER BY, LIMIT, or at the end
+            if (preg_match('/(ORDER\s+BY|LIMIT|GROUP\s+BY)/i', $query, $matches, PREG_OFFSET_CAPTURE)) {
+                $position = $matches[0][1];
+                $query = substr($query, 0, $position) . " WHERE user_id = {$userId} " . substr($query, $position);
+            } else {
+                // No ORDER BY or LIMIT, add at the end
+                $query = rtrim($query, ';') . " WHERE user_id = {$userId}";
+            }
+        }
+        
+        return $query;
     }
 }
 
