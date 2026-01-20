@@ -1,4 +1,5 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -26,7 +27,7 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import workouts from '@/routes/workouts';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Dumbbell, Image as ImageIcon, StickyNote, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Dumbbell, FileText, Image as ImageIcon, StickyNote, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface SetData {
@@ -47,6 +48,8 @@ interface Workout {
     id: number;
     date: string;
     title: string | null;
+    type: string | null;
+    raw_text: string | null;
     photo_path: string | null;
     photo_url: string | null;
     notes: string | null;
@@ -113,6 +116,11 @@ export default function WorkoutShow({ workout, exercises }: WorkoutShowProps) {
                                 <h1 className="mt-1 text-3xl font-bold">
                                     {workout.title || 'Workout'}
                                 </h1>
+                                {workout.type && (
+                                    <Badge variant="secondary" className="mt-2">
+                                        {workout.type}
+                                    </Badge>
+                                )}
                                 <div className="mt-2 flex gap-4 text-sm text-muted-foreground">
                                     <span>
                                         <strong className="font-semibold text-foreground">
@@ -174,6 +182,23 @@ export default function WorkoutShow({ workout, exercises }: WorkoutShowProps) {
                                         />
                                     </div>
                                 )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Raw Text Reference */}
+                    {workout.raw_text && (
+                        <Card className="mb-6">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-base">
+                                    <FileText className="size-4" />
+                                    Original Text
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm font-mono">
+                                    {workout.raw_text}
+                                </div>
                             </CardContent>
                         </Card>
                     )}

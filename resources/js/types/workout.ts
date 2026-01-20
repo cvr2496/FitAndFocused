@@ -22,6 +22,8 @@ export interface Set {
     unit: WeightUnit;
     notes: string | null;
     confidence: ConfidenceLevel;
+    time_seconds?: number | null;
+    distance_meters?: number | null;
 }
 
 /**
@@ -39,12 +41,22 @@ export interface Workout {
     id?: number;
     date: string; // YYYY-MM-DD format
     title: string | null;
+    type?: 'strength' | 'crossfit' | 'cardio' | 'other';
     photo_path: string | null;
+    raw_text?: string | null;
     notes: string | null;
     exercises: Exercise[];
+    metrics?: {
+        total_time_seconds?: number | null;
+        total_rounds?: number | null;
+        score?: string | null;
+    } | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    custom_content?: any;
     created_at?: string;
     updated_at?: string;
 }
+
 
 /**
  * Response from photo upload/extraction endpoint

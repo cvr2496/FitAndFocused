@@ -11,7 +11,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { type UploadResponse } from '@/types/workout';
 import { Head, router } from '@inertiajs/react';
-import { AlertCircle, Camera, Image as ImageIcon, X } from 'lucide-react';
+import { AlertCircle, Camera, Image as ImageIcon, Pencil, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -28,6 +28,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function WorkoutUpload() {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [manualText, setManualText] = useState('');
+    const [entryMode, setEntryMode] = useState<'photo' | 'manual'>('manual');
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -81,14 +83,19 @@ export default function WorkoutUpload() {
     };
 
     const handleUpload = async () => {
-        if (!selectedFile) return;
+        if (entryMode === 'photo' && !selectedFile) return;
+        if (entryMode === 'manual' && !manualText.trim()) return;
 
         setIsUploading(true);
         setError(null);
 
         try {
             const formData = new FormData();
-            formData.append('photo', selectedFile);
+            if (entryMode === 'photo' && selectedFile) {
+                formData.append('photo', selectedFile);
+            } else if (entryMode === 'manual') {
+                formData.append('content', manualText);
+            }
 
             // Using Inertia's router to post with FormData
             router.post('/api/workouts/upload', formData, {
@@ -106,8 +113,8 @@ export default function WorkoutUpload() {
                 onError: (errors) => {
                     setError(
                         errors.photo ||
-                            errors.message ||
-                            'Failed to upload photo. Please try again.',
+                        errors.message ||
+                        'Failed to upload photo. Please try again.',
                     );
                     setIsUploading(false);
                 },
@@ -208,61 +215,99 @@ export default function WorkoutUpload() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-4">
-                                {/* Camera Capture Button - Primary */}
-                                <Button
-                                    size="lg"
-                                    onClick={() =>
-                                        cameraInputRef.current?.click()
-                                    }
-                                    className="h-16 w-full text-base font-semibold"
-                                >
-                                    <Camera className="size-6" />
-                                    Take Photo
-                                </Button>
-
-                                {/* Hidden camera input */}
-                                <input
-                                    ref={cameraInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    capture="environment"
-                                    onChange={handleCameraCapture}
-                                    className="hidden"
-                                />
-
-                                {/* Divider */}
-                                <div className="relative">
-                                    <div className="absolute inset-0 flex items-center">
-                                        <span className="w-full border-t" />
-                                    </div>
-                                    <div className="relative flex justify-center text-xs uppercase">
-                                        <span className="bg-card px-2 text-muted-foreground">
-                                            Or
-                                        </span>
-                                    </div>
+                                <div className="grid w-full grid-cols-2 rounded-lg bg-muted p-1">
+                                    <Button
+                                        variant={entryMode === 'photo' ? 'default' : 'ghost'}
+                                        onClick={() => setEntryMode('photo')}
+                                        className="rounded-md"
+                                        size="sm"
+                                    >
+                                        <Camera className="mr-2 size-4" />
+                                        Photo
+                                    </Button>
+                                    <Button
+                                        variant={entryMode === 'manual' ? 'default' : 'ghost'}
+                                        onClick={() => setEntryMode('manual')}
+                                        className="rounded-md"
+                                        size="sm"
+                                    >
+                                        <Pencil className="mr-2 size-4" />
+                                        Manual
+                                    </Button>
                                 </div>
 
-                                {/* File Upload Button - Secondary */}
-                                <Button
-                                    size="lg"
-                                    variant="outline"
-                                    onClick={() =>
-                                        fileInputRef.current?.click()
-                                    }
-                                    className="h-16 w-full text-base"
-                                >
-                                    <ImageIcon className="size-6" />
-                                    Choose from Gallery
-                                </Button>
+                                {entryMode === 'photo' ? (
+                                    <>
+                                        {/* Camera Capture Button - Primary */}
+                                        <Button
+                                            size="lg"
+                                            onClick={() => cameraInputRef.current?.click()}
+                                            className="h-16 w-full text-base font-semibold"
+                                        >
+                                            <Camera className="mr-2 size-6" />
+                                            Take Photo
+                                        </Button>
 
-                                {/* Hidden file input */}
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileSelect}
-                                    className="hidden"
-                                />
+                                        {/* Hidden camera input */}
+                                        <input
+                                            ref={cameraInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            capture="environment"
+                                            onChange={handleCameraCapture}
+                                            className="hidden"
+                                        />
+
+                                        {/* Divider */}
+                                        <div className="relative">
+                                            <div className="absolute inset-0 flex items-center">
+                                                <span className="w-full border-t" />
+                                            </div>
+                                            <div className="relative flex justify-center text-xs uppercase">
+                                                <span className="bg-card px-2 text-muted-foreground">
+                                                    Or
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* File Upload Button - Secondary */}
+                                        <Button
+                                            size="lg"
+                                            variant="outline"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="h-16 w-full text-base"
+                                        >
+                                            <ImageIcon className="mr-2 size-6" />
+                                            Choose from Gallery
+                                        </Button>
+
+                                        {/* Hidden file input */}
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFileSelect}
+                                            className="hidden"
+                                        />
+                                    </>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <textarea
+                                            value={manualText}
+                                            onChange={(e) => setManualText(e.target.value)}
+                                            placeholder="Write your workout here...&#10;e.g.&#10;Flat Bench: 10x60kg, 8x70kg&#10;Squats: 5x100kg"
+                                            className="min-h-[200px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                        />
+                                        <Button
+                                            size="lg"
+                                            onClick={handleUpload}
+                                            disabled={isUploading || !manualText.trim()}
+                                            className="w-full"
+                                        >
+                                            {isUploading ? 'Processing...' : 'Process Workout Log'}
+                                        </Button>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 
