@@ -35,6 +35,12 @@ export interface Exercise {
 }
 
 /**
+ * Valid JSON-serializable content for custom workout data
+ * Mirrors Inertia's FormDataConvertible requirements
+ */
+export type WorkoutCustomContent = Record<string, string | number | boolean | null | undefined | Array<string | number | boolean | null | undefined> | Record<string, string | number | boolean | null | undefined>>;
+
+/**
  * Complete workout data
  */
 export interface Workout {
@@ -51,8 +57,7 @@ export interface Workout {
         total_rounds?: number | null;
         score?: string | null;
     } | null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    custom_content?: any;
+    custom_content?: WorkoutCustomContent;
     created_at?: string;
     updated_at?: string;
 }
