@@ -61,11 +61,7 @@ class HomeController extends Controller
             function () use ($ai, $user) {
                 try {
                     $recommendation = $ai->generateRecommendation($user);
-                    return $recommendation ?? [
-                        'title' => 'Daily Recommendation', 
-                        'description' => 'Could not generate workout.', 
-                        'exercises' => []
-                    ];
+                    return $recommendation;
                 } catch (\Exception $e) {
                     \Illuminate\Support\Facades\Log::error('AI Recommendation Failed: ' . $e->getMessage());
                     return [
@@ -161,7 +157,7 @@ class HomeController extends Controller
             return 0; // Or handle as "never"
         }
 
-        return \Carbon\Carbon::parse($lastWorkout->date)->startOfDay()->diffInDays(now()->startOfDay());
+        return (int) \Carbon\Carbon::parse($lastWorkout->date)->startOfDay()->diffInDays(now()->startOfDay());
     }
 }
 

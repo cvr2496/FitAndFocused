@@ -6,6 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property \Illuminate\Support\Carbon $date
+ * @property string|null $title
+ * @property string|null $type
+ * @property string|null $photo_path
+ * @property string|null $raw_text
+ * @property string|null $notes
+ * @property array|null $custom_content
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read \App\Models\User $user
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Set[] $sets
+ */
 class Workout extends Model
 {
     protected $fillable = [
@@ -14,10 +29,14 @@ class Workout extends Model
         'title',
         'photo_path',
         'notes',
+        'type',
+        'custom_content',
+        'raw_text',
     ];
 
     protected $casts = [
         'date' => 'date',
+        'custom_content' => 'array',
     ];
 
     /**

@@ -89,6 +89,8 @@ class WorkoutController extends Controller
                 'id' => $workout->id,
                 'date' => $workout->date->format('Y-m-d'),
                 'title' => $workout->title,
+                'type' => $workout->type,
+                'raw_text' => $workout->raw_text,
                 'photo_path' => $workout->photo_path,
                 'photo_url' => $workout->photo_path ? asset('storage/' . $workout->photo_path) : null,
                 'notes' => $workout->notes,

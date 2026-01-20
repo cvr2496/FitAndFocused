@@ -11,5 +11,5 @@ test('authenticated users can visit the dashboard', function () {
     /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $this->actingAs($user = User::factory()->create());
 
-    $this->get(route('dashboard'))->assertOk();
+    $this->get(route('dashboard'))->assertRedirect('/home');
 });

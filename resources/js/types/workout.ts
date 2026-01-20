@@ -22,6 +22,8 @@ export interface Set {
     unit: WeightUnit;
     notes: string | null;
     confidence: ConfidenceLevel;
+    time_seconds?: number | null;
+    distance_meters?: number | null;
 }
 
 /**
@@ -33,18 +35,33 @@ export interface Exercise {
 }
 
 /**
+ * Valid JSON-serializable content for custom workout data
+ * Mirrors Inertia's FormDataConvertible requirements
+ */
+export type WorkoutCustomContent = Record<string, string | number | boolean | null | undefined | Array<string | number | boolean | null | undefined> | Record<string, string | number | boolean | null | undefined>>;
+
+/**
  * Complete workout data
  */
 export interface Workout {
     id?: number;
     date: string; // YYYY-MM-DD format
     title: string | null;
+    type?: 'strength' | 'crossfit' | 'cardio' | 'other';
     photo_path: string | null;
+    raw_text?: string | null;
     notes: string | null;
     exercises: Exercise[];
+    metrics?: {
+        total_time_seconds?: number | null;
+        total_rounds?: number | null;
+        score?: string | null;
+    } | null;
+    custom_content?: WorkoutCustomContent;
     created_at?: string;
     updated_at?: string;
 }
+
 
 /**
  * Response from photo upload/extraction endpoint
