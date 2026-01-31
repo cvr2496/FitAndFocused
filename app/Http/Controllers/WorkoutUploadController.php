@@ -42,8 +42,10 @@ class WorkoutUploadController extends Controller
             }
 
             // Validate the upload
+            // Accept common image formats including heic/heif from iPhones
+            // Note: Most browsers convert HEIC to JPEG on upload, but we accept it just in case
             $request->validate([
-                'photo' => 'required_without:content|image|mimes:jpeg,jpg,png|max:10240', // Max 10MB
+                'photo' => 'required_without:content|image|mimes:jpeg,jpg,png,gif,webp,heic,heif|max:10240', // Max 10MB
                 'content' => 'required_without:photo|string|max:10000',
             ]);
 
@@ -123,7 +125,11 @@ class WorkoutUploadController extends Controller
                 Storage::delete($processedPath);
             }
 
-            return back()->with('error', 'Failed to process upload: ' . $e->getMessage());
+            // Return error in a format Inertia's onError callback can handle
+            // Use withErrors for photo-related errors so frontend receives them
+            return back()->withErrors([
+                'photo' => 'Failed to process upload. Please try again or use a different image.',
+            ])->with('error', 'Failed to process upload: ' . $e->getMessage());
         }
     }
 

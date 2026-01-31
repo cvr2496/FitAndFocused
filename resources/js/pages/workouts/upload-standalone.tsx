@@ -7,15 +7,18 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Head, router } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { Head, router, usePage } from '@inertiajs/react';
 import { AlertCircle, Camera, Image as ImageIcon, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 export default function WorkoutUploadStandalone() {
+    const { flash } = usePage<SharedData>().props;
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    // Initialize error state with flash error if present
+    const [error, setError] = useState<string | null>(flash?.error ?? null);
 
     const cameraInputRef = useRef<HTMLInputElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -80,11 +83,13 @@ export default function WorkoutUploadStandalone() {
             router.post('/api/workouts/upload', formData, {
                 forceFormData: true,
                 onError: (errors) => {
-                    setError(
-                        errors.photo ||
-                        errors.message ||
-                        'Failed to upload photo. Please try again.',
-                    );
+                    // Handle various error formats from Inertia/Laravel
+                    const errorMessage = 
+                        (errors as Record<string, string>).photo ||
+                        (errors as Record<string, string>).message ||
+                        (typeof errors === 'string' ? errors : null) ||
+                        'Failed to upload photo. Please try again.';
+                    setError(errorMessage);
                 },
                 onFinish: () => {
                     setIsUploading(false);

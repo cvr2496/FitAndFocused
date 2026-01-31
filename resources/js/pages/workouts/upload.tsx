@@ -8,9 +8,9 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type SharedData } from '@/types';
 import { type UploadResponse } from '@/types/workout';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { AlertCircle, Camera, Image as ImageIcon, Pencil, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 
@@ -26,12 +26,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function WorkoutUpload() {
+    const { flash } = usePage<SharedData>().props;
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [manualText, setManualText] = useState('');
     const [entryMode, setEntryMode] = useState<'photo' | 'manual'>('manual');
     const [isUploading, setIsUploading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    // Initialize error state with flash error if present
+    const [error, setError] = useState<string | null>(flash?.error ?? null);
 
     const cameraInputRef = useRef<HTMLInputElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -111,11 +113,14 @@ export default function WorkoutUpload() {
                     }
                 },
                 onError: (errors) => {
-                    setError(
-                        errors.photo ||
-                        errors.message ||
-                        'Failed to upload photo. Please try again.',
-                    );
+                    // Handle various error formats from Inertia/Laravel
+                    const errorMessage = 
+                        (errors as Record<string, string>).photo ||
+                        (errors as Record<string, string>).content ||
+                        (errors as Record<string, string>).message ||
+                        (typeof errors === 'string' ? errors : null) ||
+                        'Failed to upload. Please try again.';
+                    setError(errorMessage);
                     setIsUploading(false);
                 },
                 onFinish: () => {
