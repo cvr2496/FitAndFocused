@@ -96,7 +96,7 @@ test('save validates required fields', function () {
     /** @var \Illuminate\Foundation\Testing\TestCase $this */
     $response = $this->post(route('api.workouts.save'), []);
     
-    $response->assertSessionHasErrors(['date', 'exercises']);
+    $response->assertSessionHasErrors(['date']);
 });
 
 test('save validates exercise structure', function () {

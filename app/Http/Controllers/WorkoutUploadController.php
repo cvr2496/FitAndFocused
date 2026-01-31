@@ -31,7 +31,7 @@ class WorkoutUploadController extends Controller
      * Handle workout photo upload and extract data via OCR
      *
      * @param Request $request
-     * @return \Inertia\Response|\Illuminate\Http\JsonResponse
+     * @return \Inertia\Response|\Illuminate\Http\RedirectResponse
      */
     public function upload(Request $request): \Inertia\Response|\Illuminate\Http\RedirectResponse
     {
@@ -43,42 +43,55 @@ class WorkoutUploadController extends Controller
 
             // Validate the upload
             $request->validate([
-                'photo' => 'required|image|mimes:jpeg,jpg,png|max:10240', // Max 10MB
+                'photo' => 'required_without:content|image|mimes:jpeg,jpg,png|max:10240', // Max 10MB
+                'content' => 'required_without:photo|string|max:10000',
             ]);
 
-            $file = $request->file('photo');
-            $timestamp = now()->format('Y-m-d-His');
-            $filename = $timestamp . '-' . Str::random(8);
+            if ($request->hasFile('photo')) {
+                $file = $request->file('photo');
+                $timestamp = now()->format('Y-m-d-His');
+                $filename = $timestamp . '-' . Str::random(8);
 
-            // Ensure storage directories exist
-            Storage::disk('public')->makeDirectory('uploads/original');
-            Storage::makeDirectory('uploads/processed');
+                // Ensure storage directories exist
+                Storage::disk('public')->makeDirectory('uploads/original');
+                Storage::makeDirectory('uploads/processed');
 
-            // Save original image to public disk
-            $originalPath = $file->storeAs('uploads/original', $filename . '.' . $file->extension(), 'public');
-            $originalFullPath = Storage::disk('public')->path($originalPath);
+                // Save original image to public disk
+                $originalPath = $file->storeAs('uploads/original', $filename . '.' . $file->extension(), 'public');
+                $originalFullPath = Storage::disk('public')->path($originalPath);
 
-            Log::info('Photo uploaded', [
-                'original_path' => $originalPath,
-                'size' => $file->getSize()
-            ]);
+                Log::info('Photo uploaded', [
+                    'original_path' => $originalPath,
+                    'size' => $file->getSize()
+                ]);
 
-            // Preprocess image for better OCR
-            $processedPath = 'uploads/processed/' . $filename . '.jpg';
-            $processedFullPath = Storage::path($processedPath);
-            
-            $this->imageService->preprocessForOCR($originalFullPath, $processedFullPath);
+                // Preprocess image for better OCR
+                $processedPath = 'uploads/processed/' . $filename . '.jpg';
+                $processedFullPath = Storage::path($processedPath);
+                
+                $this->imageService->preprocessForOCR($originalFullPath, $processedFullPath);
 
-            Log::info('Image preprocessed', ['processed_path' => $processedPath]);
+                Log::info('Image preprocessed', ['processed_path' => $processedPath]);
 
-            // Extract workout data using Claude Vision API
-            $workoutData = $this->anthropicService->extractWorkoutData($processedFullPath);
+                // Extract workout data using Claude Vision API
+                $workoutData = $this->anthropicService->extractWorkoutData($processedFullPath);
 
-            // Add the original photo path to the response
-            $workoutData['photo_path'] = $originalPath;
+                // Add the original photo path to the response
+                $workoutData['photo_path'] = $originalPath;
 
-            // Clean up processed image (keep original for verification UI)
-            Storage::delete($processedPath);
+                // Clean up processed image (keep original for verification UI)
+                Storage::delete($processedPath);
+                
+                // Track source type
+                $workoutData['raw_text'] = null; // OCR result is implicit in data
+
+            } else {
+                // Handle text input
+                $content = $request->input('content');
+                $workoutData = $this->anthropicService->extractFromText($content);
+                $workoutData['photo_path'] = null; // No photo
+                $workoutData['raw_text'] = $content;
+            }
 
             Log::info('Workout data extraction completed', [
                 'exercises' => count($workoutData['exercises'] ?? [])
@@ -87,7 +100,7 @@ class WorkoutUploadController extends Controller
             // Store workout data in session and redirect to verify page (Post/Redirect/Get pattern)
             session([
                 'workout_data' => $workoutData,
-                'workout_photo_url' => asset('storage/' . $originalPath),
+                'workout_photo_url' => $workoutData['photo_path'] ? asset('storage/' . $workoutData['photo_path']) : null,
             ]);
 
             return redirect()->route('workouts.verify');
@@ -156,14 +169,19 @@ class WorkoutUploadController extends Controller
                 'date' => 'required|date',
                 'title' => 'nullable|string|max:255',
                 'photo_path' => 'nullable|string',
+                'raw_text' => 'nullable|string',
+                'type' => 'nullable|string|in:strength,crossfit,cardio,other',
                 'notes' => 'nullable|string',
-                'exercises' => 'required|array',
-                'exercises.*.name' => 'required|string',
-                'exercises.*.sets' => 'required|array',
+                'metrics' => 'nullable|array', // Allow metrics
+                'exercises' => 'nullable|array', // Exercises optional? Let's say yes for max flexibility
+                'exercises.*.name' => 'required_with:exercises|string',
+                'exercises.*.sets' => 'nullable|array',
                 'exercises.*.sets.*.reps' => 'nullable|integer|min:0',
                 'exercises.*.sets.*.weight' => 'nullable|numeric|min:0',
-                'exercises.*.sets.*.unit' => 'nullable|string|in:kg,lbs',
+                'exercises.*.sets.*.unit' => 'nullable|string', // Removed strict in:kg,lbs
                 'exercises.*.sets.*.notes' => 'nullable|string',
+                'exercises.*.sets.*.time_seconds' => 'nullable|integer',
+                'exercises.*.sets.*.distance_meters' => 'nullable|numeric',
             ]);
 
             DB::beginTransaction();
@@ -175,21 +193,32 @@ class WorkoutUploadController extends Controller
                 'title' => $validated['title'] ?? null,
                 'photo_path' => $validated['photo_path'] ?? null,
                 'notes' => $validated['notes'] ?? null,
+                'type' => $validated['type'] ?? 'strength',
+                'raw_text' => $validated['raw_text'] ?? null,
+                'custom_content' => $validated, // Store everything as flexible JSON
             ]);
 
-            // Create sets for each exercise
-            $setNumber = 1;
-            foreach ($validated['exercises'] as $exercise) {
-                foreach ($exercise['sets'] as $set) {
-                    Set::create([
-                        'workout_id' => $workout->id,
-                        'exercise_name' => $exercise['name'],
-                        'set_number' => $setNumber++,
-                        'reps' => $set['reps'] ?? null,
-                        'weight' => $set['weight'] ?? null,
-                        'unit' => $set['unit'] ?? 'kg',
-                        'notes' => $set['notes'] ?? null,
-                    ]);
+            // Create sets for each exercise if they exist
+            if (!empty($validated['exercises'])) {
+                $setNumber = 1;
+                foreach ($validated['exercises'] as $exercise) {
+                    if (empty($exercise['sets'])) continue;
+                    
+                    foreach ($exercise['sets'] as $set) {
+                        // Best effort mapping to strict "sets" table
+                        Set::create([
+                            'workout_id' => $workout->id,
+                            'exercise_name' => $exercise['name'],
+                            'set_number' => $setNumber++,
+                            'reps' => $set['reps'] ?? null,
+                            'weight' => $set['weight'] ?? null,
+                            'unit' => $set['unit'] ?? 'kg',
+                            'notes' => $set['notes'] ?? null,
+                            // Note: time/distance are not in sets table yet, 
+                            // maybe put them in notes if present?
+                            // For now, custom_content holds the robust data.
+                        ]);
+                    }
                 }
             }
 
@@ -199,8 +228,7 @@ class WorkoutUploadController extends Controller
             session()->forget(['workout_data', 'workout_photo_url']);
 
             Log::info('Workout saved successfully', [
-                'workout_id' => $workout->id,
-                'total_sets' => $setNumber - 1
+                'workout_id' => $workout->id
             ]);
 
             // Redirect to workout detail page

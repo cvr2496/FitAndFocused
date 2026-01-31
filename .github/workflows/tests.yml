@@ -54,6 +54,18 @@ jobs:
       - name: Create storage link
         run: php artisan storage:link
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install NPM dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
       - name: Run backend tests
         run: php artisan test
 
